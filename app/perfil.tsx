@@ -1,9 +1,59 @@
 import React from "react";
-import { Text } from "react-native";
+import { ScrollView, Text } from "react-native";
+import { NavBar } from "../components/NavBar";
+
 const Perfil = () => {
-  return (
+  return < ScrollView>
+          <NavBar />
     <Text>ESTE ES EL PERFIL</Text> 
-  )
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+      <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+      <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+      <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+    <Text>ESTE ES EL PERFIL</Text> 
+  </ScrollView>
 }
 
 /*import { NavBar } from "@/components/NavBar";

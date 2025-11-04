@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 type NavBarOption = "perdidos" | "encontrados" | "enAdopcion";
 
-export const NavBar = ({ active }: { active?: NavBarOption }) => {
+export const NavBar = ({ active }: { active?: NavBarOption }) => {  //define comportamiento de active, puede ser opcional? pero si le pasan dato es del tipo NavBarOption
     return (
         <SafeAreaView style={styles.navbar}>
           <Link href="./perdidos" style={active === "perdidos" && styles.active}>
@@ -22,19 +22,17 @@ export const NavBar = ({ active }: { active?: NavBarOption }) => {
     }
 
 const styles = StyleSheet.create({
-  active: { fontWeight: "bold", fontSize: 16, textShadowColor: "#000", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10, color: "#f01250" },
+  active: { fontWeight: "bold", fontSize: 16, textShadowColor: "#000", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10},
 
     navbar: {
         backgroundColor: "#f01250",
         flexDirection: 'row', // Alinea los elementos horizontalmente
         alignItems: "center",
         justifyContent: 'space-around', // Distribuye el espacio entre los elementos
-        padding: 10,
+        paddingVertical: -20,
     },
     texto: {
-        color: "#e1e1e1",
-        fontSize: 14,
-        marginRight: 3, // Margen horizontal para separar los textos
+      paddingRight: 5, fontWeight: "bold", fontSize: 14, color: "#e1e1e1", textShadowColor: "#0000002f", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10
     }
 
 });

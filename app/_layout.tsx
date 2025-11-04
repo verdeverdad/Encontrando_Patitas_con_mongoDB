@@ -5,7 +5,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
 import { BackButton } from "@/components/BackButtons";
-import { NavBar } from "@/components/NavBar";
 import { Tabs } from "expo-router/tabs";
 import React from "react";
 
@@ -38,8 +37,6 @@ export default function RootLayout() {
             color="white"
             size={30} />
         </View>
-        <NavBar />
-
         <Tabs
           initialRouteName="index"
           backBehavior="history"
