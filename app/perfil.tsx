@@ -7,13 +7,11 @@ const Perfil = () => {
     <>
       <NavBar />
       <ScrollView style={{ marginTop: 50, padding: 10 }}>
-        <Text>ESTE no ES EL PERFIL</Text>
-        <Text>ESTE ES no EL PERFIL</Text>
-        <Text>ESTE ES EL no PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
+        <Text>Nombres: Sofia</Text>
+        <Text>Apellido: Lopez</Text>
+        <Text>Edad: 28</Text>
+        <Text>Correo: sofia.lopez@example.com</Text>
+        <Text>Teléfono: 123-456-7890</Text>
         <Text>ESTE ES EL PERFIL</Text>
         <Text>ESTE ES EL PERFIL</Text>
         <Text>ESTE ES EL PERFIL</Text>

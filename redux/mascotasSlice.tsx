@@ -17,7 +17,7 @@ const mascotasSlice = createSlice({
       descripcion?: string,
 
       
-}[], // Store list of todos
+}[], // Store list of mascotas
   },
   reducers: {
     setMascotas: (state, action) => {
@@ -33,13 +33,13 @@ const mascotasSlice = createSlice({
     },
     updateMascotas: (state, action) => {
       const { id, newText } = action.payload;
-      const todo = state.data.find((todo) => todo.id === id);
-      if (todo) {
-        todo.titulo = newText;
+      const mascota = state.data.find((mascota) => mascota.id === id);
+      if (mascota) {
+        mascota.titulo = newText;
       }
     },
     deleteMascotas: (state, action) => {
-      state.data = state.data.filter((Perdidos) => Perdidos.id !== action.payload);
+      state.data = state.data.filter((mascota) => mascota.id !== action.payload);
     },
   },
 });
