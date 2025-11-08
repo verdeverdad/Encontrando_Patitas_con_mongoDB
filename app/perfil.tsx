@@ -3,58 +3,60 @@ import { ScrollView, Text } from "react-native";
 import { NavBar } from "../components/NavBar";
 
 const Perfil = () => {
-  return < ScrollView>
-          <NavBar />
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-      <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-      <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-      <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-    <Text>ESTE ES EL PERFIL</Text> 
-  </ScrollView>
-}
+  return (
+    <>
+      <NavBar />
+      <ScrollView style={{ marginTop: 50, padding: 10 }}>
+        <Text>ESTE no ES EL PERFIL</Text>
+        <Text>ESTE ES no EL PERFIL</Text>
+        <Text>ESTE ES EL no PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+        <Text>ESTE ES EL PERFIL</Text>
+      </ScrollView>
+    </>
+  );
+};
 
 /*import { NavBar } from "@/components/NavBar";
 import { auth, db } from "@/firebaseConfig";

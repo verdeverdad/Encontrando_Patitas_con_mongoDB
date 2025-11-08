@@ -1,18 +1,25 @@
+import { BackButton } from "@/components/BackButtons";
 import { store } from "@/redux/store";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router/tabs";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
 import { Text, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
-import { BackButton } from "@/components/BackButtons";
-import { Tabs } from "expo-router/tabs";
-import React from "react";
-
 export default function RootLayout() {
+  const insets = useSafeAreaInsets();
   return (
     <Provider store={store}>
       <SafeAreaProvider style={{ backgroundColor: "#e1e1e1" }}>
+        <StatusBar
+          style="light" // Estilo por defecto para toda la app
+          backgroundColor="#f01250" // Color de fondo por defecto (solo Android)
+        />
+
         <View style={{
+          paddingTop: insets.top, //Añade el padding superior basado en los insets de seguridad usando hook useSafeAreaInsets()
           flexDirection: "row",
           justifyContent: "space-around",
           alignItems: "center",
@@ -37,6 +44,7 @@ export default function RootLayout() {
             color="white"
             size={30} />
         </View>
+      
         <Tabs
           initialRouteName="index"
           backBehavior="history"
