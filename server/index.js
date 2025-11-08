@@ -1,9 +1,15 @@
+require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const express = require('express'); // 1. Importar Express
 const app = express();              // 2. Inicializar la app
 const PORT = 8000;                  // 3. Definir el puerto
 
-const uri = "mongodb+srv://sofia16d:inomniaparatus@cluster0.f7oby.mongodb.net/?appName=Cluster0";
+const uri = process.env.MONGO_URI;
+
+// Comprobación de seguridad (opcional, pero buena práctica)
+if (!uri) {
+    throw new Error('MONGO_URI no está definido en las variables de entorno.');
+}
 
 // Crear un MongoClient con un objeto MongoClientOptions para establecer la versión de Stable API
 const client = new MongoClient(uri, {
