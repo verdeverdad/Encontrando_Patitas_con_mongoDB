@@ -1,4 +1,7 @@
-require('dotenv').config();
+const path = require('path'); // Importa el módulo 'path' de Node.js
+require('dotenv').config({ 
+    path: path.resolve(__dirname, '..', '.env') 
+});
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const express = require('express'); // 1. Importar Express
 const app = express();              // 2. Inicializar la app
