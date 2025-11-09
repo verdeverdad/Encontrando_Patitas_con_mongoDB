@@ -1,12 +1,14 @@
+import SignUpScreen from "@/components/SignUpScreen";
 import React from "react";
-import { ScrollView, Text } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 
 const Perfil = () => {
   return (
-    <>
+    <View >
       <NavBar />
       <ScrollView style={{ marginTop: 50, padding: 10 }}>
+        <SignUpScreen />
         <Text>Nombres: Sofia</Text>
         <Text>Apellido: Lopez</Text>
         <Text>Edad: 28</Text>
@@ -52,7 +54,7 @@ const Perfil = () => {
         <Text>ESTE ES EL PERFIL</Text>
         <Text>ESTE ES EL PERFIL</Text>
       </ScrollView>
-    </>
+    </View>
   );
 };
 
