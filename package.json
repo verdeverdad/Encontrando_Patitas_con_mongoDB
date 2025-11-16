@@ -2,6 +2,7 @@
   "name": "encontrando_patitas_con_mongodb",
   "main": "expo-router/entry",
   "version": "1.0.0",
+
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -38,6 +39,7 @@
     "ionicons": "^8.0.13",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
+    "morgan": "^1.10.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -56,6 +58,7 @@
     "@types/react-redux": "^7.1.34",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "nodemon": "^3.1.11",
     "typescript": "~5.9.2"
   },
   "private": true
