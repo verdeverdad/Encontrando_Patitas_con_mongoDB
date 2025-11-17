@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "server/index.js"  ]
+, "server/index.js", "server/routes/auth.routes.js", "server/controllers/auth.contoller.js", "server/models/user.models.js"  ]
 }
