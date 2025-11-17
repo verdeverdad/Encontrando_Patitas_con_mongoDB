@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from 'url';
 import authRoutes from "./routes/auth.routes.js";
-
+import mascotasRoutes from "./routes/mascota.routes.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -25,6 +25,7 @@ if (!uri) {
 app.use(express.json());
 app.use(cookiesParser());
 app.use("/api", authRoutes);
+app.use("/api", mascotasRoutes);
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.send('Servidor Express funcionando y conectado a MongoDB!');
