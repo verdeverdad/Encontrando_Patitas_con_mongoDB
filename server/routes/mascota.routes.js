@@ -6,15 +6,14 @@ import {
   getMascotas,
   updateMascota,
 } from "../controllers/mascota.controllers.js";
-import { auth } from "../middlewares/auth.middleware.js";
 import { authRequired } from "../middlewares/validateTokens.js";
 
 const router = Router();
 
-router.get("/mascotas", auth, getMascotas); //obtener 
-router.post("/mascotas", auth, authRequired, createMascota);//crear
-router.get("/mascotas/:id", auth, getMascota);//obtener uno solo
-router.put("/mascotas/:id", auth, authRequired, updateMascota);//actualizar uno
-router.delete("/mascotas/:id", auth, authRequired, deleteMascota);//eliminar uno
+router.get("/mascotas", authRequired, getMascotas); //obtener 
+router.post("/mascotas", authRequired, createMascota);//crear
+router.get("/mascotas/:id", authRequired, getMascota);//obtener uno solo
+router.put("/mascotas/:id", authRequired, updateMascota);//actualizar uno
+router.delete("/mascotas/:id", authRequired, deleteMascota);//eliminar uno
 
 export default router;
