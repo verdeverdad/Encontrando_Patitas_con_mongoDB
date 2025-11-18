@@ -18,7 +18,8 @@ export default function RootLayout() {
           backgroundColor="#f01250" // Color de fondo por defecto (solo Android)
         />
 
-        <View style={{
+        <View 
+        style={{
           paddingTop: insets.top, //Añade el padding superior basado en los insets de seguridad usando hook useSafeAreaInsets()
           flexDirection: "row",
           justifyContent: "space-around",
@@ -94,6 +95,30 @@ export default function RootLayout() {
           />
           <Tabs.Screen
             name="enAdopcion"
+            options={{
+              href: null,
+            }}
+          />
+           <Tabs.Screen
+            name="login"
+            options={{
+              href: null,
+            }}
+          />
+           <Tabs.Screen
+            name="register"
+            options={{
+              href: null,
+            }}
+          />
+          <Tabs.Screen
+            name="mascota"
+            options={{
+              href: null,
+            }}
+          />
+          <Tabs.Screen
+            name="publicarMascota"
             options={{
               href: null,
             }}

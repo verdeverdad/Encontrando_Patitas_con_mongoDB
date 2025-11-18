@@ -6,6 +6,6 @@ export default function Encontrados() {
 
   return <>
         <NavBar active="encontrados" />
-    <Text>ESTE ES EL ENCONTRADOS</Text> 
+    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL ENCONTRADOS</Text> 
   </>
 }

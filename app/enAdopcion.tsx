@@ -7,7 +7,7 @@ export default function EnAdopcion() {
   return <>
         <NavBar active="enAdopcion" />
 
-    <Text>ESTE ES EL EN ADOPCIÓN</Text> 
+    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL EN ADOPCIÓN</Text> 
   </>
 
 }

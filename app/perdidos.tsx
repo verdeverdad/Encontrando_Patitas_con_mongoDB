@@ -6,6 +6,6 @@ export default function Perdidos() {
 
   return <>
           <NavBar active="perdidos" />
-    <Text>ESTE ES EL PERDIDOS</Text> 
+    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL PERDIDOS</Text> 
   </>
 }

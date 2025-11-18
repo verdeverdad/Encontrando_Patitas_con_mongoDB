@@ -6,12 +6,6 @@ import { loginSchema, registerSchema } from '../schemas/auth.schemas.js';
 
 const router = Router();
 
-router.post('/register', register);
-  // Lógica para registrar un usuario
-
-
-router.post('/login', login);
-
 router.post('/register', validateSchema(registerSchema), register);
   // Lógica para registrar un usuario
 
