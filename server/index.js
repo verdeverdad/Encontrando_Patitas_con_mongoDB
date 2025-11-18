@@ -1,4 +1,5 @@
 import cookiesParser from 'cookie-parser';
+import cors from 'cors';
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
@@ -24,6 +25,14 @@ if (!uri) {
 // Middleware
 app.use(express.json());
 app.use(cookiesParser());
+
+// CORS y logger
+app.use(cors({ origin: '*', credentials: true })); // para desarrollo: reemplazar origin por tu dominio en producción
+app.use((req, res, next) => {
+  console.log(`[HTTP] ${req.method} ${req.url} - body:`, req.body);
+  next();
+});
+
 app.use("/api", authRoutes);
 app.use("/api", mascotasRoutes);
 // Ruta de prueba

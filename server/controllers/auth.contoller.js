@@ -6,7 +6,7 @@ export const register = async (req, res) => {  //funcion asincrona para registra
 
     try {
 
-        const { username, email, password } = req.body
+        const { username, email, password, phone } = req.body
 
         //encriptar la contraseña
         const passwordHash = await bcrypt.hash(password, 10)
@@ -14,7 +14,8 @@ export const register = async (req, res) => {  //funcion asincrona para registra
         const newUser = new User({ //intenta hacer un nuevo usuario 
             username,
             email,
-            password: passwordHash //la contraseña tiene como valor el hash
+            password: passwordHash, //la contraseña tiene como valor el hash
+            phone
         });
 
         const userSaved = await newUser.save(); //y guardar el usuario en la base de datos
@@ -24,7 +25,8 @@ export const register = async (req, res) => {  //funcion asincrona para registra
         res.json({
             id: userSaved._id,
             username: userSaved.username,
-            email: userSaved.email
+            email: userSaved.email,
+            phone: userSaved.phone
         });
         console.log(newUser);
 
