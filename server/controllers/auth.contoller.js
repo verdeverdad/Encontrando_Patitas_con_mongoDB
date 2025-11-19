@@ -23,6 +23,7 @@ export const register = async (req, res) => {  //funcion asincrona para registra
         res.cookie('token', token); //guardar el token en una cookie
         //datos que voy a usar en el frontend
         res.json({
+            token,
             id: userSaved._id,
             username: userSaved.username,
             email: userSaved.email,
@@ -82,5 +83,6 @@ export const profile = async (req, res) => {
         id: userFound._id,
         username: userFound.username,
         email: userFound.email,
+        phone: userFound.phone
     })
 }

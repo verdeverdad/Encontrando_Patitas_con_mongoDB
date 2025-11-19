@@ -1,21 +1,48 @@
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-// Asumiendo que NavBar es un componente que ya existe y está tipado
+import axios from "axios";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 // Importar Zod y la función de validación
-import axios from "axios";
-import { registerSchema } from "../lib/auth.schemas"; // Cambio de ruta// Asume que tienes un hook o constante para tu URL base del Backend
-const API_BASE_URL = 'http://localhost:8000/api'; // *** ¡IMPORTANTE! Reemplaza con tu IP o dominio ***
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerSchema } from "../lib/auth.schemas";
+const API_BASE_URL = 'http://localhost:8000/api'; // cambiar segun donde desplegas la app web expoGo etc
+
+
 
 export default function Register() {
-  const router = useRouter(); 
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({}); // Para manejar errores de validación de Zod
   const [loading, setLoading] = useState(false); // Estado de carga para la API
+
+  // Función reutilizable para mostrar alertas y opcionalmente navegar
+  const showAlert = (title: string, message: string, navigateTo?: any) => {
+    if (Platform.OS === "web") {
+      // En web usamos window.alert (sin soporte para onPress), luego navegamos
+      window.alert(`${title}\n\n${message}`);
+      if (navigateTo) router.push(navigateTo);
+      return;
+    }
+    // En native usamos Alert.alert con botón OK y onPress
+    Alert.alert(
+      title,
+      message,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            if (navigateTo) router.push(navigateTo);
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+  };
+
 
   // Función de manejo de registro
   const handleRegister = async () => {
@@ -40,40 +67,31 @@ export default function Register() {
         return; // Detener la ejecución si hay errores de validación
       }
 
-            console.log('Enviando POST a:', `${API_BASE_URL}/register`, 'payload:', result.data);
+      console.log('Enviando POST a:', `${API_BASE_URL}/register`, 'payload:', result.data);
 
 
       // 2. Si la validación pasa, enviar datos al Backend
-      const response = await axios.post(`${API_BASE_URL}/register`, result.data);
+      //Esta parte solo se ejecuta si la validación del frontend fue exitosa.
+      const response = await axios.post(`${API_BASE_URL}/register`, result.data); //result.data ason los dtos ya validados por Zod, listos para ser enviados.
+      //guardar token después del axios.post exitoso:
+      const token = response.data.token; // El token debe venir en la respuesta
+      if (token) {
+        await AsyncStorage.setItem('userToken', token);
+      }// <--- DEBES HACER ESTO
       console.log("Registro exitoso. Datos del usuario:", response.data);
       // 3. Manejo de éxito
-    // ✅ Limpiar campos después del registro exitoso
-    setUsername('');
-    setEmail('');
-    setPassword('');
-    setPhone('');
-
-    // ✅ Mostrar alerta y esperar a que se cierre antes de navegar
-    Alert.alert(
-      "Registro Exitoso",
-      "¡Tu cuenta ha sido creada!",
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            router.push('/perfil'); // Navegar DESPUÉS de que el usuario presione OK
-          }
-        }
-      ]
-    );
+      // Limpiar campos después del registro exitoso
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setPhone('');
+      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/login");
 
     } catch (error: any) {
       console.error("Error de registro:", error.response?.data || error.message);
-
-      // Manejar errores de API (ej: email duplicado, error 400)
+      setLoading(false);
       const apiMessage = error.response?.data?.message || "Ocurrió un error en el servidor.";
-      Alert.alert("Error", apiMessage);
-
+      showAlert("Error", apiMessage);
     } finally {
       setLoading(false);
     }
@@ -93,7 +111,6 @@ export default function Register() {
 
       <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>REGISTRARSE</Text>
 
-      {/* ✅ Eliminamos la etiqueta <form> */}
       < View style={styles.container}>
         <View style={styles.containerInicioSesion}>
           <Text style={styles.tituloRegister}>Registrarse</Text>
@@ -135,7 +152,7 @@ export default function Register() {
           />
           {renderError('password')}
 
-          {/* ✅ Usamos onPress para llamar a handleRegister */}
+          {/* Usamos onPress para llamar a handleRegister */}
           <TouchableOpacity
             style={styles.buttonsRegister}
             onPress={handleRegister}
@@ -148,7 +165,10 @@ export default function Register() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonsCancelar}>
+          <TouchableOpacity
+            style={styles.buttonsCancelar}
+            onPress={() => router.back()}
+          >
             <Text style={styles.textButtons}>CANCELAR</Text>
           </TouchableOpacity>
 

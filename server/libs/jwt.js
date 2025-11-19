@@ -9,3 +9,6 @@ export async function createAccessToken(payload) {
     });
   });
 }
+export const verifyToken = (token) => {
+  return jwt.verify(token, TOKEN_SECRET);
+};

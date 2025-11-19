@@ -1,529 +1,256 @@
-import SignUpScreen from "@/components/SignUpScreen";
-import React from "react";
-import { ScrollView, Text, View } from "react-native";
-import { NavBar } from "../components/NavBar";
-
-const Perfil = () => {
-  return (
-    <View >
-      <NavBar />
-      <ScrollView style={{ marginTop: 50, padding: 10 }}>
-        <SignUpScreen />
-        <Text>Nombres: Sofia</Text>
-        <Text>Apellido: Lopez</Text>
-        <Text>Edad: 28</Text>
-        <Text>Correo: sofia.lopez@example.com</Text>
-        <Text>Teléfono: 123-456-7890</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-        <Text>ESTE ES EL PERFIL</Text>
-      </ScrollView>
-    </View>
-  );
-};
-
-/*import { NavBar } from "@/components/NavBar";
-import { auth, db } from "@/firebaseConfig";
-import { clearPerfil, setPerfil } from "@/redux/perfilSlice";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { SafeAreaView, } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { NavBar } from "../components/NavBar"; // Asumo que tienes tu NavBar
 
+// Importación simulada de almacenamiento seguro para el token
+// En un proyecto real de Expo/React Native usarías 'expo-secure-store' o 'AsyncStorage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
 
+// Ajusta la URL base. Asumo que el endpoint de perfil es /auth/me
+const API_BASE_URL = 'http://localhost:8000/api'; 
 
-const Perfil = () => {
-  const dispatch = useDispatch();
-  const perfil = useSelector((state: any) => state.perfil.data);
-  const [nombre, setNombre] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [password, setPassword] = useState("");
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [esNuevoUsuario, setEsNuevoUsuario] = useState(true);
-  const [perfilImage, setPerfilImage] = useState<string | null>(null);
-  const [image, setImage] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [telefono, setTelefono] = useState("")
-  const [usuarioLogeado, setUsuarioLogeado] = useState(!!auth.currentUser); // Verifica si hay usuario logeado al inicio
-  const [modo, setModo] = useState<"inicioSesion" | "registro" | null>(null); // Estado para el modo
-  const [publicaciones, setPublicaciones] = useState<any[]>([]); // Estado para las publicaciones del usuario
-  const [expandedItemId, setExpandedItemId] = useState<string | null>(null); // Nuevo estado para controlar qué item está expandido
-  const [isGuardandoPerfil, setIsGuardandoPerfil] = useState(false); // Nuevo estado de carga
+// Interfaz para tipar la respuesta de la API del perfil
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  phone: string;
+  // Puedes añadir más campos aquí, como createdAt, role, etc.
+}
 
+export default function PerfilScreen() {
+  const router = useRouter(); 
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const SESSION_ACTIVE_KEY = 'sessionActive';
+  // Función para obtener el token y cargar los datos del usuario
+  const fetchUserProfile = async () => {
+    setLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const sessionActive = await AsyncStorage.getItem(SESSION_ACTIVE_KEY);
-        if (!sessionActive && auth.currentUser) {
-          console.log("Posible cierre inesperado o recarga. Limpiando sesión local.");
-          dispatch(clearPerfil());
-          // No se recomienda cerrar sesión en Firebase Auth aquí, ya que podría ser un cierre por el sistema o una recarga.
-          // La mejor práctica es que el usuario cierre sesión explícitamente.
-          router.replace('/'); // O redirigir a la pantalla de inicio
+    try {
+      // 1. Obtener el token (Simulación)
+      // En una aplicación real, este token se guardaría después del login/registro
+      const token = await AsyncStorage.getItem('userToken'); 
+      
+      if (!token) {
+        setError("Token no encontrado. Por favor, inicia sesión.");
+        setLoading(false);
+        // Opcional: Redirigir si no hay token
+        // router.replace('/login'); 
+        return;
+      }
+
+      // 2. Llamada a la API con el token
+      const response = await axios.get<UserProfile>(`${API_BASE_URL}/profile`, {
+        headers: {
+          // *** El token DEBE ir en el encabezado de autorización ***
+          'Authorization': `Bearer ${token}` 
         }
-      } catch (error) {
-        console.error("Error al verificar la sesión:", error);
+      });
+
+      // 3. Almacenar los datos del usuario
+      setUser(response.data);
+
+    } catch (err: any) {
+      console.error("Error al obtener perfil:", err.response?.data || err.message);
+      
+      let errorMessage = "No se pudo cargar el perfil.";
+      if (err.response?.status === 401) {
+        errorMessage = "Sesión expirada. Por favor, vuelve a iniciar sesión.";
+      } else if (err.message.includes('Network')) {
+        errorMessage = "Error de conexión. Verifica el servidor.";
       }
-    };
-
-    checkSession();
-  }, []);
-  const cargarPublicacionesUsuario = async () => {
-    if (auth.currentUser) {
-      const userDocRef = doc(db, "usuarios", auth.currentUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        const publicacionesIds = userData.publicaciones || [];
-        // Cargar las publicaciones desde Firestore
-        const publicacionesPromises = publicacionesIds.map(async (id: string) => {
-          const docRef = doc(db, "perdidos", id);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            return { id, ...docSnap.data() };
-          } else {
-            console.warn(`La publicación con ID ${id} no existe.`);
-            return null; // O algún otro valor para indicar que no se encontró
-          }
-        });
-
-        const publicaciones = (await Promise.all(publicacionesPromises)).filter(p => p !== null);
-        console.log("Publicaciones del usuario:", publicaciones);
-        setPublicaciones(publicaciones); // Actualiza el estado local con las publicaciones
-      } else {
-        console.warn("No se encontró el perfil del usuario en Firestore.");
-      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Cargar el perfil al montar el componente
   useEffect(() => {
-    cargarPublicacionesUsuario();
-  }, [auth.currentUser]);
+    fetchUserProfile();
+  }, []); 
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUsuarioLogeado(!!user);
-    });
-    return unsubscribe;
-  }, []);
-
-  useEffect(() => {
-    if (perfil) {
-      console.log("Actualizando estado local con datos del perfil:", perfil); // Depuración
-      setNombre(perfil.nombre);
-      setCorreo(perfil.correo);
-      setPerfilImage(perfil.image);
-      setTelefono(perfil.telefono)
-      setDescripcion(perfil.descripcion)
-      setEsNuevoUsuario(false);
-      setPublicaciones(perfil.publicaciones || []); // Asegúrate de cargar las publicaciones si existen
-      setTelefono(perfil.telefono || ""); // Asegúrate de cargar el teléfono si existe
-    }
-  }, [perfil]);
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setPerfilImage(result.assets[0].uri);
-      setImage(result.assets[0].uri); // Actualiza la URL de la imagen
-    }
+  // Función para cerrar sesión (simulado)
+  const handleLogout = async () => {
+    // 1. Limpiar el token del almacenamiento
+    await AsyncStorage.removeItem('userToken');
+    // 2. Limpiar el estado del usuario
+    setUser(null);
+    // 3. Redirigir a la pantalla de login/inicio
+    router.replace('/login');
   };
 
-  const handleRegistrar = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, correo, password,);
-      const user = userCredential.user;
 
-      // Datos del perfil
-      const nuevoPerfil = { nombre, correo: user.email || "", telefono: telefono, image: image };
+  // --- Renderizado ---
 
-      // Guarda los datos en Firestore
-      await setDoc(doc(db, "usuarios", user.uid), nuevoPerfil);
-
-      // Actualiza el estado en Redux
-      dispatch(setPerfil(nuevoPerfil));
-      console.log("Usuario registrado y datos guardados en Firestore:", nuevoPerfil);
-      setEsNuevoUsuario(false);
-    } catch (error) {
-      console.error("Error al registrar:", error);
-    }
-    await AsyncStorage.setItem(SESSION_ACTIVE_KEY, 'true');
-
-  };
-  const handleIniciarSesion = async () => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, correo, password);
-      const user = userCredential.user;
-
-      // Obtén los datos del usuario desde Firestore
-      const docRef = doc(db, "usuarios", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const perfilData = docSnap.data();
-        console.log("Datos del perfil cargados desde Firestore:", perfilData); // Depuración
-        if (perfilData && perfilData.nombre && perfilData.image) {
-          dispatch(setPerfil(perfilData as { nombre: string; correo: string; telefono: string; image: string }));
-          setTelefono(perfilData.telefono || ""); // Carga el teléfono al iniciar sesión
-        } else {
-          console.error("Los datos del perfil no tienen el formato esperado:", perfilData);
-        }
-      } else {
-        console.warn("No se encontraron datos para este usuario en Firestore.");
-      }
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-    }
-    await AsyncStorage.setItem(SESSION_ACTIVE_KEY, 'true');
-
-  };
-  const handleCerrarSesion = async () => {
-    try {
-      await signOut(auth);
-      dispatch(clearPerfil());
-      await AsyncStorage.removeItem(SESSION_ACTIVE_KEY);
-      setUsuarioLogeado(false);
-      setEsNuevoUsuario(true);
-      setNombre("");
-      setCorreo("");
-      setPassword("");
-      setPerfilImage("")
-      console.log("Sesión cerrada correctamente.");
-      alert("Sesión cerrada correctamente.");
-      router.push("/");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
-
-  const handleGuardarPerfil = async () => {
-    setIsGuardandoPerfil(true); // Inicia la carga
-
-    if (auth.currentUser) {
-      try {
-        const nuevoPerfil = {
-          nombre,
-          correo,
-          telefono, // Usa el estado local 'telefono'
-          image: perfilImage || image,
-        };
-        // Actualiza el documento en Firestore
-        await updateDoc(doc(db, "usuarios", auth.currentUser.uid), nuevoPerfil);
-
-        // Actualiza el estado en Redux
-        dispatch(setPerfil(nuevoPerfil));
-
-        setModoEdicion(false);
-        console.log("Perfil guardado en Firestore:", nuevoPerfil);
-        alert("Perfil guardado correctamente.");
-        cargarPublicacionesUsuario();
-      } catch (error) {
-        console.error("Error al guardar el perfil en Firestore:", error);
-        alert("Error al guardar el perfil.");
-      } finally {
-        setIsGuardandoPerfil(false); // Finaliza la carga
-      }
-    } else {
-      console.warn("No hay usuario logeado para guardar el perfil.");
-      alert("No se puede guardar el perfil: usuario no logeado.");
-      setIsGuardandoPerfil(false);
-    }
-  };
-
-  const handleBorrarPublicacion = async (publicacionId: string) => {
-    Alert.alert(
-      "Borrar Publicación",
-      "¿Estás seguro de que quieres borrar esta publicación?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Borrar",
-          style: "destructive",
-          onPress: async () => {
-            if (auth.currentUser) {
-              try {
-                // Borrar el documento de la colección "perdidos"
-                await deleteDoc(doc(db, "perdidos", publicacionId));
-                console.log(`Publicación con ID ${publicacionId} borrada.`);
-
-                // Actualizar el array 'publicaciones' en el documento del usuario
-                const userDocRef = doc(db, "usuarios", auth.currentUser.uid);
-                const userDocSnap = await getDoc(userDocRef);
-
-                if (userDocSnap.exists()) {
-                  const userData = userDocSnap.data();
-                  const publicacionesActualizadas = (userData.publicaciones || []).filter(
-                    (id: string) => id !== publicacionId
-                  );
-                  await updateDoc(userDocRef, { publicaciones: publicacionesActualizadas });
-                  console.log("Referencia de publicación borrada del perfil del usuario.");
-                  // Recargar las publicaciones del usuario
-                  cargarPublicacionesUsuario();
-                  Alert.alert("Éxito", "La publicación ha sido borrada correctamente.");
-
-                } else {
-                  console.warn("No se encontró el perfil del usuario al intentar actualizar las publicaciones.");
-                }
-              } catch (error) {
-                console.error("Error al borrar la publicación:", error);
-                Alert.alert("Error", "No se pudo borrar la publicación.");
-              }
-            } else {
-              Alert.alert("Error", "Usuario no autenticado.");
-            }
-          },
-        },
-      ],
-      { cancelable: false }
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#452790" />
+        <Text style={styles.loadingText}>Cargando perfil...</Text>
+      </View>
     );
-  };
-
-  const handleCancelar = () => {
-    setNombre("");
-    setCorreo("");
-    setTelefono("");
-    setPerfilImage("");
-    setDescripcion("");
-    setImage("");
-    setModo(null)
   }
 
-  const toggleExpanded = (itemId: string) => {
-    setExpandedItemId(expandedItemId === itemId ? null : itemId);
-  };
-
-
-  if (!usuarioLogeado) {
-    if (modo === "registro") {
-      return (<View style={{ flex: 1 }}><NavBar />
-        <View style={styles.container}>
-          <View style={styles.containerInicioSesion}>
-            <Text style={styles.titulo}>Registrarse</Text>
-            <TextInput style={styles.inputInicio} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-            <TextInput style={styles.inputInicio} placeholder="Correo Electrónico" value={correo} onChangeText={setCorreo} />
-            <TextInput style={styles.inputInicio} placeholder="Telefono" value={telefono} onChangeText={setTelefono} />
-            <TextInput style={styles.inputInicio} placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
-            <TextInput style={[styles.inputInicio, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
-            {!perfilImage && <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg, { marginTop: 15 }]} onPress={pickImage}>
-              <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
-            </TouchableOpacity>}
-            {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
-            <TouchableOpacity
-              style={[styles.buttonsInicio, styles.celesteBg]}
-              onPress={handleRegistrar}
-            >
-              <Text style={styles.blanco}>REGISTRARME</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.buttonsInicio, styles.rojoBg]} onPress={handleCancelar}>
-              <Text style={styles.blanco}>CANCELAR</Text>
-            </TouchableOpacity>
-
-          </View>
-        </View>
+  if (error) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchUserProfile}>
+          <Text style={styles.retryText}>Intentar de Nuevo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.textButtons}>Cerrar Sesión</Text>
+        </TouchableOpacity>
       </View>
-      )
-    } else {
-      return (<View style={{ flex: 1 }}><NavBar />
-        <View style={styles.container}>
-
-          <View style={styles.containerInicioSesion}>
-            <Text style={styles.titulo}>Iniciar Sesión</Text>
-            <TextInput style={styles.inputInicio} placeholder="Correo Electrónico" value={correo} onChangeText={setCorreo} />
-            <TextInput style={styles.inputInicio} placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
-            <Text></Text>
-            <TouchableOpacity style={[styles.buttonsInicio, styles.celesteBg]} onPress={handleIniciarSesion}>
-              <Text style={styles.blanco}>INICIAR SESIÓN</Text>
-            </TouchableOpacity>
-            <Text style={styles.edad}>¿Aun no tienes cuenta?</Text>
-            <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg]} onPress={() => setModo("registro")}>
-              <Text style={styles.blanco}>REGISTRARME</Text>
-            </TouchableOpacity>
-
-
-          </View>
-        </View>
-      </View>
-      )
-    }
+    );
   }
 
-  // --- Componente para la cabecera de la FlatList ---
-  const renderListHeader = () => (
-    <>
-      <View style={styles.datosContainer}>
-        <Image
-          source={{ uri: perfilImage || "https://via.placeholder.com/150" }}
-          style={styles.image}
-        />
-        <Text style={styles.titulo}>{nombre || <ActivityIndicator></ActivityIndicator>}</Text>
-        <Text style={styles.correo}>{correo || <ActivityIndicator></ActivityIndicator>}</Text>
-        <Text style={styles.correo}>{telefono || <ActivityIndicator></ActivityIndicator>}</Text>
-        <View style={{ alignItems: "center" }}>
-          <TouchableOpacity style={styles.buttons} onPress={() => setModoEdicion(true)}><Text style={{ color: "white", fontWeight: "bold", fontSize: 15 }}>EDITAR</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.buttons2} onPress={handleCerrarSesion}><Text style={{ color: "white", fontWeight: "bold", fontSize: 15 }}>CERRAR SESIÓN</Text></TouchableOpacity>
+  if (!user) {
+      return (
+        <View style={[styles.container, styles.center]}>
+            <Text style={styles.errorText}>No hay datos de usuario para mostrar.</Text>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.textButtons}>Ir a Iniciar Sesión</Text>
+            </TouchableOpacity>
         </View>
-      </View>
-      <Text style={styles.tituloPublicaciones}>Mis Publicaciones</Text>
-    </>
-  );
+      );
+  }
 
-  // --- Componente para el pie de la FlatList ---
-  // const renderListFooter = () => (
-  //   <>
-  //     <View style={styles.buttonContainer}>
-  //       <Button title="Editar" onPress={() => setModoEdicion(true)} />
-  //       <Button title="Cerrar Sesión" onPress={handleCerrarSesion} />
-  //     </View>
-  //   </>
-  // );
-
-  // --- Componente para cuando la lista está vacía ---
-  const renderEmptyList = () => (
-    <Text style={{ textAlign: "center", marginTop: 20 }}>No has creado publicaciones aún.</Text>
-  );
-
-
-
+  // Si todo es exitoso, mostrar el perfil
   return (
-    <View style={{ flex: 1 }}><NavBar />
-      <View style={styles.container}>
-        {modoEdicion ? (
-          <SafeAreaView style={styles.container}>
-            <ScrollView>
-              <Text style={styles.titulo}>Editar Perfil</Text>
-              <Image
-                source={{ uri: perfilImage || "https://via.placeholder.com/150" }}
-                style={styles.image}
-              /><TouchableOpacity style={[styles.selectButton, styles.amarilloBg]} onPress={pickImage}>
-                <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
-              </TouchableOpacity>
-              <Text style={styles.label}>Nombre:</Text>
-              <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-              <Text style={styles.label}>Correo:</Text>
-              <TextInput style={styles.input} placeholder="Correo Electrónico" value={correo} onChangeText={setCorreo} />
-              <Text style={styles.label}>Telefono:</Text>
-              <TextInput style={styles.input} placeholder="Telefono" value={telefono} onChangeText={setTelefono} />
+    <ScrollView style={styles.container}>
+      <NavBar />
+      
+      <View style={styles.card}>
+        <Text style={styles.header}>Perfil del Usuario</Text>
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>ID de Usuario:</Text>
+          <Text style={styles.value}>{user.id}</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Nombre:</Text>
+          <Text style={styles.value}>{user.username}</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value}>{user.email}</Text>
+        </View>
 
-              <View style={{ alignItems: "center" }}>
-                {isGuardandoPerfil ? (
-                  <ActivityIndicator size="large" color={styles.celesteBg.backgroundColor} />
-                ) : (
-                  <TouchableOpacity style={styles.buttons} onPress={handleGuardarPerfil}>
-                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 18 }}>GUARDAR</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity style={styles.buttons3} onPress={() => setModoEdicion(false)}>
-                  <Text style={{ color: "white", fontWeight: "bold", fontSize: 18 }}>CANCELAR</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-        ) : ( // --- Vista cuando NO está en modo edición ---
-          <SafeAreaView style={styles.container}>
-            <FlatList
-              data={publicaciones}
-              keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
-              renderItem={({ item }) => (
-                <View style={styles.item}>
-                  <Image source={{ uri: item.image }} style={styles.imageFlat} />
-                  <View style={styles.details}>
-                    <Text style={styles.titulo2}>{item.titulo}</Text>
-                    <Text style={styles.estado}>{item.valor}</Text>
-                    <Text style={styles.sexo}>Sexo: {item.sexo}</Text>
-                    <Text style={styles.localidad}>Localidad: {item.localidad}</Text>
-                    <Text style={styles.localidad}>Usuario: {item.usuarioNombre}</Text>
-                    {expandedItemId === item.id && (
-                      <View >
-                       
-                        <Text style={styles.edad}>Edad: {item.edad}</Text>
-                        <Text style={styles.localidad}>Traslado: {item.traslado}</Text>
-                        <Text style={styles.localidad}>Descripcioón: {item.descripcion}</Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Teléfono:</Text>
+          <Text style={styles.value}>{user.phone}</Text>
+        </View>
+        
+        <View style={styles.separator} />
 
-                      </View>
-                    )}
-                    <TouchableOpacity onPress={() => toggleExpanded(item.id)}>
-                      <Text style={{ fontSize: 12, marginVertical: 4, color: 'blue' }}>
-                        {expandedItemId === item.id ? 'menos info...' : 'mas info...'}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.buttonsList, styles.rojoBg]}
-                      onPress={() => handleBorrarPublicacion(item.id)}
-                    ><Text style={styles.blanco}>BORRAR</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-              ListHeaderComponent={renderListHeader}
-              // ListFooterComponent={renderListFooter}
-              ListEmptyComponent={renderEmptyList}
-              contentContainerStyle={styles.listContentContainer}
-            /> 
-          </SafeAreaView>
-        )
-
-        }
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+        </TouchableOpacity>
+        
       </View>
-    </View>
+    </ScrollView>
   );
-};*/
+}
 
-
-
-export default Perfil;
-
-
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  card: {
+    margin: 20,
+    padding: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#452790',
+    textAlign: 'center',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  value: {
+    fontSize: 16,
+    color: '#666',
+    maxWidth: '60%',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#452790',
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#f01250',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  logoutButton: {
+    backgroundColor: '#f01250', 
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 20, 
+    borderRadius: 40,
+    alignItems: "center",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  textButtons: {
+    color: '#ffffff', 
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    backgroundColor: '#452790', 
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 10, 
+    borderRadius: 40,
+    alignItems: "center",
+  },
+  retryText: {
+    color: '#ffffff', 
+    fontSize: 14,
+    fontWeight: 'bold',
+  }
+});

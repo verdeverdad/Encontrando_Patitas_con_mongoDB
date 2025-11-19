@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { TOKEN_SECRET } from '../config.js';
 
 export const authRequired = (req, res, next) => {  //requiere los tres parametros para ser middelware, se ejecuta antes de entrar a la ruta
-    const { token } = req.cookies;
+    const token  = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
     if (!token)
         return res.status(401).json({ message: 'No autorizado, token no proporcionado' });
