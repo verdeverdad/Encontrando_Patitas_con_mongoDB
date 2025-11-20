@@ -58,9 +58,11 @@ export const login = async (req, res) => {  //funcion asincrona para registrar
         res.cookie('token', token); //guardar el token en una cookie
         //datos que voy a usar en el frontend
         return res.json({
+            token,
             id: userFound._id,
             username: userFound.username,
-            email: userFound.email
+            email: userFound.email,
+
         });
     } catch (error) { //sino error
         res.status(500).json({ message: error.message });
