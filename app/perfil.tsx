@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar"; // Asumo que tienes tu NavBar
 
 // Importación simulada de almacenamiento seguro para el token
-// En un proyecto real de Expo/React Native usarías 'expo-secure-store' o 'AsyncStorage'
+// En un proyecto real de Expo/React Native usar 'expo-secure-store' o 'AsyncStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 
-// Ajusta la URL base. Asumo que el endpoint de perfil es /auth/me
 const API_BASE_URL = 'http://localhost:8000/api'; 
+const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  Cambiar con tu IP
+
 
 // Interfaz para tipar la respuesta de la API del perfil
 interface UserProfile {
@@ -17,7 +18,6 @@ interface UserProfile {
   username: string;
   email: string;
   phone: string;
-  // Puedes añadir más campos aquí, como createdAt, role, etc.
 }
 
 export default function PerfilScreen() {
@@ -25,6 +25,14 @@ export default function PerfilScreen() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+ // Seleccionar URL según plataforma
+  const getApiUrl = () => {
+    if (Platform.OS === "web") {
+      return API_BASE_URL;
+    }
+    return API_BASE_URL_EXPO;
+  };
 
   // Función para obtener el token y cargar los datos del usuario
   const fetchUserProfile = async () => {
@@ -44,8 +52,11 @@ export default function PerfilScreen() {
         return;
       }
 
+        const API_URL = getApiUrl();
+      console.log('Llamando a:', `${API_URL}/profile`);
+
       // 2. Llamada a la API con el token
-      const response = await axios.get<UserProfile>(`${API_BASE_URL}/profile`, {
+      const response = await axios.get<UserProfile>(`${API_URL}/profile`, {
         headers: {
           // *** El token DEBE ir en el encabezado de autorización ***
           'Authorization': `Bearer ${token}` 

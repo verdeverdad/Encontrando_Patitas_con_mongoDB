@@ -1,14 +1,14 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
-// Importar Zod y la función de validación
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerSchema } from "../lib/auth.schemas";
-const API_BASE_URL = 'http://localhost:8000/api'; // cambiar segun donde desplegas la app web expoGo etc
 
-
+// URLs según plataforma
+const API_BASE_URL_WEB = 'http://localhost:8000/api';
+const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  IP local de la red LAN.
 
 export default function Register() {
   const router = useRouter();
@@ -16,18 +16,24 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ [key: string]: string }>({}); // Para manejar errores de validación de Zod
-  const [loading, setLoading] = useState(false); // Estado de carga para la API
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [loading, setLoading] = useState(false);
 
-  // Función reutilizable para mostrar alertas y opcionalmente navegar
+  // Seleccionar URL según plataforma
+  const getApiUrl = () => {
+    if (Platform.OS === "web") {
+      return API_BASE_URL_WEB;
+    }
+    return API_BASE_URL_EXPO;
+  };
+
+  // Función para mostrar alertas
   const showAlert = (title: string, message: string, navigateTo?: any) => {
     if (Platform.OS === "web") {
-      // En web usamos window.alert (sin soporte para onPress), luego navegamos
       window.alert(`${title}\n\n${message}`);
-      if (navigateTo) router.push(navigateTo);
+      if (navigateTo) router.push("/perfil");
       return;
     }
-    // En native usamos Alert.alert con botón OK y onPress
     Alert.alert(
       title,
       message,
@@ -43,61 +49,59 @@ export default function Register() {
     );
   };
 
-
   // Función de manejo de registro
   const handleRegister = async () => {
     setLoading(true);
-    setErrors({}); // Limpiar errores anteriores
+    setErrors({});
 
     try {
-      // 1. Validación con Zod (Frontend Validation)
-      // Usamos safeParse para que no lance un error, sino que nos dé una respuesta estructurada
+      // Validación con Zod
       const result = registerSchema.safeParse({ username, phone, email, password });
 
       if (!result.success) {
-        // Mapear errores de Zod al estado de errores
         const newErrors: { [key: string]: string } = {};
         result.error.issues.forEach(issue => {
-          // Asumiendo que el campo 'path' es ['nombre'], ['email'], etc.
           const field = issue.path[0] as string;
           newErrors[field] = issue.message;
         });
         setErrors(newErrors);
         setLoading(false);
-        return; // Detener la ejecución si hay errores de validación
+        return;
       }
 
-      console.log('Enviando POST a:', `${API_BASE_URL}/register`, 'payload:', result.data);
+      const API_URL = getApiUrl();
+      console.log('Enviando POST a:', `${API_URL}/register`, 'payload:', result.data);
 
+      // Llamada a la API
+      const response = await axios.post(`${API_URL}/register`, result.data);
+      console.log("Registro exitoso:", response.data);
 
-      // 2. Si la validación pasa, enviar datos al Backend
-      //Esta parte solo se ejecuta si la validación del frontend fue exitosa.
-      const response = await axios.post(`${API_BASE_URL}/register`, result.data); //result.data ason los dtos ya validados por Zod, listos para ser enviados.
-      //guardar token después del axios.post exitoso:
-      const token = response.data.token; // El token debe venir en la respuesta
+      // Guardar token
+      const token = response.data.token;
       if (token) {
         await AsyncStorage.setItem('userToken', token);
-      }// <--- DEBES HACER ESTO
-      console.log("Registro exitoso. Datos del usuario:", response.data);
-      // 3. Manejo de éxito
-      // Limpiar campos después del registro exitoso
+        console.log("Token guardado en AsyncStorage");
+      }
+
+      // Limpiar campos
       setUsername('');
       setEmail('');
       setPassword('');
       setPhone('');
-      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/login");
+      setLoading(false);
+
+      // Mostrar alerta y navegar al perfil
+      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/perfil");
 
     } catch (error: any) {
       console.error("Error de registro:", error.response?.data || error.message);
       setLoading(false);
       const apiMessage = error.response?.data?.message || "Ocurrió un error en el servidor.";
       showAlert("Error", apiMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Función para mostrar el error específico de un campo
+  // Función para mostrar errores
   const renderError = (field: string) => {
     if (errors[field]) {
       return <Text style={styles.errorText}>{errors[field]}</Text>;
@@ -108,10 +112,9 @@ export default function Register() {
   return (
     <>
       <NavBar />
-
       <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>REGISTRARSE</Text>
 
-      < View style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.containerInicioSesion}>
           <Text style={styles.tituloRegister}>Registrarse</Text>
 
@@ -152,7 +155,6 @@ export default function Register() {
           />
           {renderError('password')}
 
-          {/* Usamos onPress para llamar a handleRegister */}
           <TouchableOpacity
             style={styles.buttonsRegister}
             onPress={handleRegister}
@@ -171,7 +173,6 @@ export default function Register() {
           >
             <Text style={styles.textButtons}>CANCELAR</Text>
           </TouchableOpacity>
-
         </View>
       </View>
     </>
@@ -179,7 +180,6 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  // ... (otros estilos)
   container: {
     flex: 1,
     padding: 5,
@@ -194,18 +194,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     backgroundColor: "#eeebebff",
-
-    // Sombra para iOS
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,
     shadowRadius: 4.65,
-    // Sombra para Android
     elevation: 8,
-
   },
   inputRegister: {
     width: 280,
@@ -224,7 +217,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#452790",
   },
-  // Estilo de texto para errores
   errorText: {
     color: '#ff0000',
     fontSize: 12,
@@ -244,13 +236,10 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderRadius: 40,
     marginBottom: 10,
-
-    // Sombra para iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.39,
     shadowRadius: 4.65,
-    // Sombra para Android
     elevation: 6,
   },
   buttonsCancelar: {
@@ -265,13 +254,10 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderRadius: 40,
     marginBottom: 10,
-
-    // Sombra para iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.39,
     shadowRadius: 4.65,
-    // Sombra para Android
     elevation: 6,
   },
   textButtons: {
