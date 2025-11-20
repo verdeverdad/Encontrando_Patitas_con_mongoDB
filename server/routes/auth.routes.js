@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, logout, profile, register } from '../controllers/auth.contoller.js';
+import { login, logout, profile, register, updateProfile } from '../controllers/auth.contoller.js';
 import { authRequired } from '../middlewares/validateTokens.js';
 import { validateSchema } from '../middlewares/validator.middleware.js';
 import { loginSchema, registerSchema } from '../schemas/auth.schemas.js';
@@ -19,5 +19,6 @@ router.post('/logout', logout);
 
 router.get('/profile', authRequired, profile);
 
+router.put('/profile', authRequired, updateProfile); 
 
 export default router;

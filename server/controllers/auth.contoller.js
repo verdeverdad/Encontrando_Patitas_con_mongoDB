@@ -86,3 +86,30 @@ export const profile = async (req, res) => {
         phone: userFound.phone
     })
 }
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { username, email, phone } = req.body;
+    const userId = req.user.id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username, email, phone },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    return res.json({
+      id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      phone: updatedUser.phone
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

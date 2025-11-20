@@ -1,18 +1,13 @@
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { NavBar } from "../components/NavBar"; // Asumo que tienes tu NavBar
-
-// Importación simulada de almacenamiento seguro para el token
-// En un proyecto real de Expo/React Native usar 'expo-secure-store' o 'AsyncStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
+import { useFocusEffect, useRouter } from "expo-router"; // ✅ Agregar useFocusEffect
+import React, { useCallback, useState } from "react"; // ✅ Agregar useCallback
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { NavBar } from "../components/NavBar";
 
-const API_BASE_URL = 'http://localhost:8000/api'; 
-const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  Cambiar con tu IP
+const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api';
 
-
-// Interfaz para tipar la respuesta de la API del perfil
 interface UserProfile {
   id: string;
   username: string;
@@ -21,12 +16,11 @@ interface UserProfile {
 }
 
 export default function PerfilScreen() {
-  const router = useRouter(); 
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
- // Seleccionar URL según plataforma
   const getApiUrl = () => {
     if (Platform.OS === "web") {
       return API_BASE_URL;
@@ -34,41 +28,37 @@ export default function PerfilScreen() {
     return API_BASE_URL_EXPO;
   };
 
-  // Función para obtener el token y cargar los datos del usuario
-  const fetchUserProfile = async () => {
+  // ✅ Función para obtener el perfil (reutilizable)
+  const fetchUserProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // 1. Obtener el token (Simulación)
-      // En una aplicación real, este token se guardaría después del login/registro
-      const token = await AsyncStorage.getItem('userToken'); 
+      const token = await AsyncStorage.getItem('userToken');
+      console.log("Token obtenido:", token);
       
       if (!token) {
         setError("Token no encontrado. Por favor, inicia sesión.");
         setLoading(false);
-        // Opcional: Redirigir si no hay token
-        // router.replace('/login'); 
         return;
       }
 
-        const API_URL = getApiUrl();
+      const API_URL = getApiUrl();
       console.log('Llamando a:', `${API_URL}/profile`);
 
-      // 2. Llamada a la API con el token
       const response = await axios.get<UserProfile>(`${API_URL}/profile`, {
         headers: {
-          // *** El token DEBE ir en el encabezado de autorización ***
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         }
       });
 
-      // 3. Almacenar los datos del usuario
+      console.log("Perfil obtenido:", response.data);
       setUser(response.data);
+      setLoading(false);
 
     } catch (err: any) {
       console.error("Error al obtener perfil:", err.response?.data || err.message);
-      
+
       let errorMessage = "No se pudo cargar el perfil.";
       if (err.response?.status === 401) {
         errorMessage = "Sesión expirada. Por favor, vuelve a iniciar sesión.";
@@ -76,26 +66,29 @@ export default function PerfilScreen() {
         errorMessage = "Error de conexión. Verifica el servidor.";
       }
       setError(errorMessage);
-    } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Cargar el perfil al montar el componente
-  useEffect(() => {
-    fetchUserProfile();
-  }, []); 
+  // ✅ Cargar perfil CADA VEZ que la pantalla se enfoca
+  useFocusEffect(
+    useCallback(() => {
+      console.log("📲 Pantalla perfil enfocada, recargando datos...");
+      fetchUserProfile();
+    }, [fetchUserProfile])
+  );
 
-  // Función para cerrar sesión (simulado)
+  // Función para cerrar sesión
   const handleLogout = async () => {
-    // 1. Limpiar el token del almacenamiento
     await AsyncStorage.removeItem('userToken');
-    // 2. Limpiar el estado del usuario
     setUser(null);
-    // 3. Redirigir a la pantalla de login/inicio
     router.replace('/login');
   };
 
+  // Función para navegar a editar perfil
+  const handleEditProfile = () => {
+    router.push('/editPerfil');
+  };
 
   // --- Renderizado ---
 
@@ -116,41 +109,41 @@ export default function PerfilScreen() {
           <Text style={styles.retryText}>Intentar de Nuevo</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.textButtons}>Cerrar Sesión</Text>
+          <Text style={styles.textButtons}>Cerrar Sesión</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   if (!user) {
-      return (
-        <View style={[styles.container, styles.center]}>
-            <Text style={styles.errorText}>No hay datos de usuario para mostrar.</Text>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Text style={styles.textButtons}>Ir a Iniciar Sesión</Text>
-            </TouchableOpacity>
-        </View>
-      );
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>No hay datos de usuario para mostrar.</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.textButtons}>Ir a Iniciar Sesión</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
-  // Si todo es exitoso, mostrar el perfil
   return (
     <ScrollView style={styles.container}>
       <NavBar />
-      
+      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
+
       <View style={styles.card}>
         <Text style={styles.header}>Perfil del Usuario</Text>
-        
+
         <View style={styles.detailRow}>
           <Text style={styles.label}>ID de Usuario:</Text>
           <Text style={styles.value}>{user.id}</Text>
         </View>
-        
+
         <View style={styles.detailRow}>
           <Text style={styles.label}>Nombre:</Text>
           <Text style={styles.value}>{user.username}</Text>
         </View>
-        
+
         <View style={styles.detailRow}>
           <Text style={styles.label}>Email:</Text>
           <Text style={styles.value}>{user.email}</Text>
@@ -160,13 +153,18 @@ export default function PerfilScreen() {
           <Text style={styles.label}>Teléfono:</Text>
           <Text style={styles.value}>{user.phone}</Text>
         </View>
-        
+
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+        {/* ✅ Botón para editar perfil */}
+        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+          <Text style={styles.textButtons}>EDITAR PERFIL</Text>
         </TouchableOpacity>
-        
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+        </TouchableOpacity>
+
       </View>
     </ScrollView>
   );
@@ -233,11 +231,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 15,
   },
-  logoutButton: {
-    backgroundColor: '#f01250', 
+  editButton: {
+    backgroundColor: '#452790',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    marginTop: 20, 
+    marginBottom: 10,
+    borderRadius: 40,
+    alignItems: "center",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  logoutButton: {
+    backgroundColor: '#f01250',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 40,
     alignItems: "center",
     shadowColor: '#000',
@@ -247,20 +257,20 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   textButtons: {
-    color: '#ffffff', 
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   retryButton: {
-    backgroundColor: '#452790', 
+    backgroundColor: '#452790',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    marginTop: 10, 
+    marginTop: 10,
     borderRadius: 40,
     alignItems: "center",
   },
   retryText: {
-    color: '#ffffff', 
+    color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
   }

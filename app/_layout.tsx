@@ -129,6 +129,12 @@ export default function RootLayout() {
               href: null,
             }}
           />
+          <Tabs.Screen
+            name="editPerfil"
+            options={{
+              href: null,
+            }}
+          />
         </Tabs>
       </SafeAreaProvider>
     </Provider>
