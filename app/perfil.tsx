@@ -36,7 +36,7 @@ export default function PerfilScreen() {
     try {
       const token = await AsyncStorage.getItem('userToken');
       console.log("Token obtenido:", token);
-      
+
       if (!token) {
         setError("Token no encontrado. Por favor, inicia sesión.");
         setLoading(false);
@@ -115,59 +115,57 @@ export default function PerfilScreen() {
     );
   }
 
-  if (!user) {
+  if (!user && !error) {
+    router.replace('/login');
+    return null;
+  }
+
+
+  if (user && !error) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>No hay datos de usuario para mostrar.</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.textButtons}>Ir a Iniciar Sesión</Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView style={styles.container}>
+        <NavBar />
+        <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.header}>Perfil del Usuario</Text>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.label}>ID de Usuario:</Text>
+            <Text style={styles.value}>{user.id}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.label}>Nombre:</Text>
+            <Text style={styles.value}>{user.username}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.label}>Email:</Text>
+            <Text style={styles.value}>{user.email}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.label}>Teléfono:</Text>
+            <Text style={styles.value}>{user.phone}</Text>
+          </View>
+
+          <View style={styles.separator} />
+
+          {/* ✅ Botón para editar perfil */}
+          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+            <Text style={styles.textButtons}>EDITAR PERFIL</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+          </TouchableOpacity>
+
+        </View>
+      </ScrollView>
     );
   }
 
-  return (
-    <ScrollView style={styles.container}>
-      <NavBar />
-      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.header}>Perfil del Usuario</Text>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>ID de Usuario:</Text>
-          <Text style={styles.value}>{user.id}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Nombre:</Text>
-          <Text style={styles.value}>{user.username}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Email:</Text>
-          <Text style={styles.value}>{user.email}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Teléfono:</Text>
-          <Text style={styles.value}>{user.phone}</Text>
-        </View>
-
-        <View style={styles.separator} />
-
-        {/* ✅ Botón para editar perfil */}
-        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
-          <Text style={styles.textButtons}>EDITAR PERFIL</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
-        </TouchableOpacity>
-
-      </View>
-    </ScrollView>
-  );
 }
 
 const styles = StyleSheet.create({

@@ -279,14 +279,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#f7f7f7',
     },
     errorText: {
-        color: '#ff0000',
+        color: '#f01250',
         fontSize: 12,
         alignSelf: 'flex-start',
         marginTop: 4,
         marginLeft: 5,
     },
     saveButton: {
-        backgroundColor: '#452790',
+        backgroundColor: '#f7a423',
         paddingVertical: 12,
         marginTop: 30,
         borderRadius: 40,

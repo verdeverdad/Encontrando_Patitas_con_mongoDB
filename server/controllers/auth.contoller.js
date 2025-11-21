@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { createAccessToken } from '../libs/jwt.js';
 import User from '../models/user.models.js';
 
-export const register = async (req, res) => {  //funcion asincrona para registrar
+export const register = async (req, res) => {  //funcion asincrona para registrar un usuario
 
     try {
 
