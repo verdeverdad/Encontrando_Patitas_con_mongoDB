@@ -6,7 +6,7 @@ export const register = async (req, res) => {  //funcion asincrona para registra
 
     try {
 
-        const { username, email, password, phone } = req.body
+        const { username, email, password, phone, perfilImage } = req.body
 
         //encriptar la contraseña
         const passwordHash = await bcrypt.hash(password, 10)
@@ -15,7 +15,8 @@ export const register = async (req, res) => {  //funcion asincrona para registra
             username,
             email,
             password: passwordHash, //la contraseña tiene como valor el hash
-            phone
+            phone,
+            perfilImage: req.body.perfilImage || null
         });
 
         const userSaved = await newUser.save(); //y guardar el usuario en la base de datos
@@ -27,7 +28,8 @@ export const register = async (req, res) => {  //funcion asincrona para registra
             id: userSaved._id,
             username: userSaved.username,
             email: userSaved.email,
-            phone: userSaved.phone
+            phone: userSaved.phone,
+            perfilImage: userSaved.perfilImage
         });
         console.log(newUser);
 
@@ -62,7 +64,7 @@ export const login = async (req, res) => {  //funcion asincrona para registrar
             id: userFound._id,
             username: userFound.username,
             email: userFound.email,
-
+perfilImage: userFound.perfilemage
         });
     } catch (error) { //sino error
         res.status(500).json({ message: error.message });
@@ -85,33 +87,35 @@ export const profile = async (req, res) => {
         id: userFound._id,
         username: userFound.username,
         email: userFound.email,
-        phone: userFound.phone
+        phone: userFound.phone,
+        perfilImage: userFound.perfilImage
     })
 }
 
 export const updateProfile = async (req, res) => {
-  try {
-    const { username, email, phone } = req.body;
-    const userId = req.user.id;
+    try {
+        const { username, email, phone, perfilImage } = req.body;
+        const userId = req.user.id;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { username, email, phone },
-      { new: true }
-    );
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { username, email, phone, ...(perfilImage && { perfilImage }) },
+            { new: true }
+        );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
+        if (!updatedUser) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        return res.json({
+            id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            phone: updatedUser.phone,
+            perfilImage: updatedUser.perfilImage
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    return res.json({
-      id: updatedUser._id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      phone: updatedUser.phone
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useFocusEffect, useRouter } from "expo-router"; // ✅ Agregar useFocusEffect
 import React, { useCallback, useState } from "react"; // ✅ Agregar useCallback
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -13,6 +13,7 @@ interface UserProfile {
   username: string;
   email: string;
   phone: string;
+  perfilImage: string;
 }
 
 export default function PerfilScreen() {
@@ -21,6 +22,7 @@ export default function PerfilScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   const getApiUrl = () => {
     if (Platform.OS === "web") {
       return API_BASE_URL;
@@ -28,7 +30,7 @@ export default function PerfilScreen() {
     return API_BASE_URL_EXPO;
   };
 
-  // ✅ Función para obtener el perfil (reutilizable)
+  // Función para obtener el perfil (reutilizable)
   const fetchUserProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -70,7 +72,7 @@ export default function PerfilScreen() {
     }
   }, []);
 
-  // ✅ Cargar perfil CADA VEZ que la pantalla se enfoca
+  // Cargar perfil CADA VEZ que la pantalla se enfoca
   useFocusEffect(
     useCallback(() => {
       console.log("📲 Pantalla perfil enfocada, recargando datos...");
@@ -91,6 +93,7 @@ export default function PerfilScreen() {
   };
 
   // --- Renderizado ---
+
 
   if (loading) {
     return (
@@ -115,56 +118,60 @@ export default function PerfilScreen() {
     );
   }
 
-  if (!user && !error) {
-    router.replace('/login');
-    return null;
-  }
-
-
-  if (user && !error) {
+  if (!user) {
     return (
-      <ScrollView style={styles.container}>
-        <NavBar />
-        <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
-
-        <View style={styles.card}>
-          <Text style={styles.header}>Perfil del Usuario</Text>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>ID de Usuario:</Text>
-            <Text style={styles.value}>{user.id}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Nombre:</Text>
-            <Text style={styles.value}>{user.username}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>{user.email}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Teléfono:</Text>
-            <Text style={styles.value}>{user.phone}</Text>
-          </View>
-
-          <View style={styles.separator} />
-
-          {/* ✅ Botón para editar perfil */}
-          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
-            <Text style={styles.textButtons}>EDITAR PERFIL</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
-          </TouchableOpacity>
-
-        </View>
-      </ScrollView>
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>No hay datos de usuario para mostrar.</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.textButtons}>Ir a Iniciar Sesión</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
+
+  return (
+    <ScrollView style={styles.container}>
+      <NavBar />
+      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
+
+      <View style={styles.card}>
+        <Text style={styles.header}>Perfil del Usuario</Text>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>ID de Usuario:</Text>
+          <Text style={styles.value}>{user.id}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Nombre:</Text>
+          <Text style={styles.value}>{user.username}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value}>{user.email}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Teléfono:</Text>
+          <Text style={styles.value}>{user.phone}</Text>
+        </View>
+        <Image source={{ uri: user.perfilImage }} style={styles.imageFlat} />
+
+        <View style={styles.separator} />
+
+        {/* Botón para editar perfil */}
+        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+          <Text style={styles.textButtons}>EDITAR PERFIL</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+        </TouchableOpacity>
+
+      </View>
+    </ScrollView>
+  );
 
 }
 
@@ -271,5 +278,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
-  }
+  },
+  imageFlat: {
+    width: 160, height: 160, marginVertical: 10, backgroundColor: "gray", borderRadius: 80, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.29)', alignSelf: "center" // Sombra para el botón
+  },
 });

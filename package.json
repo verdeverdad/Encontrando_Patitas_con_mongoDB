@@ -20,6 +20,7 @@
     "@reduxjs/toolkit": "^2.9.2",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "cros": "^1.1.0",
     "dotenv": "^17.2.3",
@@ -63,5 +64,15 @@
     "nodemon": "^3.1.11",
     "typescript": "~5.9.2"
   },
+  "expo": {
+  "plugins": [
+    [
+      "expo-image-picker",
+      {
+        "photosPermission": "La app necesita acceder a tus fotos para elegir imágenes de perfil."
+      }
+    ]
+  ]
+},
   "private": true
 }

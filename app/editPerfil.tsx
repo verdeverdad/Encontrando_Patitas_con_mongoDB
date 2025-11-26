@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 // Importar el esquema de validación, si también lo usas para la edición
-import { registerSchema } from "../lib/auth.schemas";
+import * as ImagePicker from "expo-image-picker";
 
 // URLs según plataforma 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -18,6 +18,7 @@ interface UserProfile {
     username: string;
     email: string;
     phone: string;
+    perfilImage?: string;
 }
 
 export default function EditarPerfilScreen() {
@@ -27,12 +28,13 @@ export default function EditarPerfilScreen() {
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState(''); // Contraseña se maneja aparte
-
+    const [perfilImage, setPerfilImage] = useState<string | null>(null);
     const [initialLoading, setInitialLoading] = useState(true); // Carga inicial de datos
     const [updateLoading, setUpdateLoading] = useState(false); // Carga al guardar
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [image, setImage] = useState("");    // Seleccionar URL según plataforma
+    const [newImage, setNewImage] = useState('')
 
-    // Seleccionar URL según plataforma
     const getApiUrl = () => {
         if (Platform.OS === "web") {
             return API_BASE_URL;
@@ -59,100 +61,148 @@ export default function EditarPerfilScreen() {
             { cancelable: false }
         );
     };
+    // Selección de imagen
+ const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+    });
+
+    if (!result.canceled) {
+        const localURI = result.assets[0].uri;
+
+        console.log("Imagen seleccionada:", localURI);
+ // Guardar imagen local para subirla al guardar cambios
+        setNewImage(localURI);
+        // 👇 ESTO es lo que hace que se vea al instante
+        setPerfilImage(localURI);
+
+        
+    }
+};
+
+
+    // Subir a Cloudinary
+    const uploadImageToCloudinary = async (imageUri: any) => {
+        const data = new FormData();
+        if (Platform.OS === "web") {
+            // 1. Usamos fetch(imageUri) para cargar el archivo en la memoria del navegador como un Blob.
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+            // 2. Adjuntamos el Blob al FormData con un nombre de archivo.
+            data.append("file", blob, "profile_upload.jpg");
+        } else {
+            data.append("file", {
+                uri: imageUri,
+                type: "image/jpeg",
+                name: "profile.jpg",
+            } as any);
+        }
+        data.append("upload_preset", "Encontrando_Patitas");
+        data.append("cloud_name", "dkn6snovy");
+
+        try {
+            let res = await fetch("https://api.cloudinary.com/v1_1/dkn6snovy/image/upload", {
+                method: "POST",
+                body: data,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            let json = await res.json();
+            return json.secure_url;
+
+        } catch (error) {
+            console.log("Error Cloudinary:", error);
+            return null;
+        }
+    };
 
     // ==========================================================
     // PASO 1: CARGAR DATOS DEL USUARIO EXISTENTE
     // ==========================================================
-    useEffect(() => {
-        const fetchCurrentData = async () => {
-            try {
-                const token = await AsyncStorage.getItem('userToken');
-                if (!token) {
-                    showAlertAndRedirect("Error", "Sesión no iniciada.", "/login");
-                    return;
-                }
-                const API_URL = getApiUrl();
-                const response = await axios.get<UserProfile>(`${API_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                // Pre-cargar los estados con los datos existentes
-                const userData = response.data;
-                setUsername(userData.username);
-                setEmail(userData.email);
-                setPhone(userData.phone);
-
-            } catch (error) {
-                console.error("Error al cargar datos iniciales:", error);
-                Alert.alert("Error de Carga", "No se pudieron obtener los datos del perfil.");
-            } finally {
-                setInitialLoading(false);
+    const fetchCurrentData = useCallback(async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                showAlertAndRedirect("Error", "Sesión no iniciada.", "/login");
+                return;
             }
-        };
+            const API_URL = getApiUrl();
+            const response = await axios.get<UserProfile>(`${API_URL}/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-        fetchCurrentData();
-    }, []);
+            // Pre-cargar los estados con los datos existentes
+            const userData = response.data;
+            setUsername(userData.username);
+            setEmail(userData.email);
+            setPhone(userData.phone);
+            setPerfilImage(userData.perfilImage || null);
 
+        } catch (error) {
+            console.error("Error al cargar datos iniciales:", error);
+            Alert.alert("Error de Carga", "No se pudieron obtener los datos del perfil.");
+        } finally {
+            setInitialLoading(false);
+        }
+    },
+
+        [getApiUrl]);
+
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchCurrentData();
+        }, [fetchCurrentData])
+    );
     // ==========================================================
     // PASO 2: MANEJAR LA ACTUALIZACIÓN
     // ==========================================================
-    const handleUpdate = async () => {
-        setUpdateLoading(true);
-        setErrors({});
+  const handleUpdate = async () => {
+    setUpdateLoading(true);
 
-        try {
-            const dataToUpdate = { username, phone, email, password: password || undefined };
+    try {
+        let urlCloudinary = perfilImage; // valor actual por defecto
 
-            // Opcional: Validación en el frontend (puedes usar el mismo schema o uno modificado)
-            // Nota: Zod te permite hacer validaciones parciales (para un PATCH)
-            const validationResult = registerSchema.partial().safeParse(dataToUpdate);
-
-            if (!validationResult.success) {
-                const newErrors: { [key: string]: string } = {};
-                validationResult.error.issues.forEach(issue => {
-                    const field = issue.path[0] as string;
-                    newErrors[field] = issue.message;
-                });
-                setErrors(newErrors);
-                setUpdateLoading(false);
-                return;
+        // SI SELECCIONÓ IMAGEN NUEVA → subir a Cloudinary
+        if (newImage) {
+            const uploadedUrl = await uploadImageToCloudinary(newImage);
+            if (!uploadedUrl) {
+                return showAlertAndRedirect("Error de Imagen", "No se pudo subir la imagen.");
             }
-
-            const token = await AsyncStorage.getItem('userToken');
-            const API_URL = getApiUrl();
-            // Envía la petición PUT/PATCH al servidor. Usamos PATCH para actualizar parcialmente.
-            const response = await axios.put(`${API_URL}/profile`, validationResult.data, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            console.log("Actualización exitosa:", response.data);
-
-            // Limpia la contraseña para seguridad
-            setPassword('');
-            setUpdateLoading(false);
-
-            // usar la función que soporta web y mobile
-            showAlertAndRedirect("Éxito", "¡Tu perfil ha sido actualizado correctamente!", "/perfil");
-        
-
-        } catch (error: any) {
-            console.error("Error al actualizar perfil:", error.response?.data || error.message);
-
-            let errorMessage = "Ocurrió un error al guardar los cambios.";
-            if (error.response?.data?.message) {
-                errorMessage = Array.isArray(error.response.data.message)
-                    ? error.response.data.message.join('\n')
-                    : error.response.data.message;
-            }
-
-            Alert.alert("Error de Actualización", errorMessage);
-
-        } finally {
-            setUpdateLoading(false);
+            urlCloudinary = uploadedUrl;
         }
-    };
+
+        const token = await AsyncStorage.getItem("userToken");
+        const API_URL = getApiUrl();
+
+        const dataToUpdate = {
+            username,
+            phone,
+            email,
+            password: password || undefined,
+            perfilImage: urlCloudinary,  // 👈 ESTA LÍNEA ES LO IMPORTANTE
+        };
+
+        const response = await axios.put(`${API_URL}/profile`, dataToUpdate, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Perfil actualizado:", response.data);
+
+        showAlertAndRedirect("Éxito", "Perfil actualizado correctamente", "/perfil");
+
+    } catch (error) {
+        console.error("Error:",  error);
+        Alert.alert("Error", "No se pudo actualizar tu perfil.");
+    } finally {
+        setUpdateLoading(false);
+    }
+};
 
     // Función para mostrar el error específico de un campo
     const renderError = (field: string) => {
@@ -216,6 +266,16 @@ export default function EditarPerfilScreen() {
                 />
                 {renderError('password')}
 
+
+                {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
+                
+                <TextInput style={[styles.input, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
+              
+               <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg, { marginTop: 15 }]} onPress={pickImage}>
+                    <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
+                </TouchableOpacity>
+
+
                 <TouchableOpacity
                     style={styles.saveButton}
                     onPress={handleUpdate}
@@ -237,8 +297,11 @@ export default function EditarPerfilScreen() {
 
             </View>
         </ScrollView>
-    );
+    )
+
 }
+
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8f8f8' },
@@ -313,5 +376,32 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    image: {
+        width: 160,
+        height: 160,
+        marginVertical: 10,
+        backgroundColor: "gray",
+        borderRadius: 80, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.29)',
+        alignSelf: "center" // Sombra para el botón
+    },
+    blanco: {
+        color: "#ffffff"
+    },
+    amarilloBg: {
+        backgroundColor: "#f7a423"
+    },
+    buttonsInicio: {
+        borderWidth: 2,
+        color: '#ffffff',
+        borderColor: 'white',
+        borderRadius: 40,
+        marginBottom: 20,
+        boxShadow: '0 6px 6px rgba(0, 0, 0, 0.39)', // Sombra para el botón
+        width: 240,
+        fontSize: 15,
+        height: 50,
+        alignItems: "center", // Centra el texto horizontalmente
+        justifyContent: "center", // Centra el texto verticalmente
     },
 });

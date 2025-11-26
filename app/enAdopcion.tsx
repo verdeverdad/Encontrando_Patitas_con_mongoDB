@@ -11,7 +11,7 @@ export default function EnAdopcion() {
     <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL EN ADOPCIÓN</Text> 
   
     <TouchableOpacity>
-        <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 24, color: 'blue' }} onPress={() =>router.push('/register')}>VOLVER AL INICIO</Text>
+        <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 24, color: 'blue' }} onPress={() =>router.push('/register')}>REGISTRARSE</Text>
   </TouchableOpacity></>
 
 }

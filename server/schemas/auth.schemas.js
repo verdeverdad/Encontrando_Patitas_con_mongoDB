@@ -22,6 +22,7 @@ export const registerSchema = z.object({
     .min(9, "El teléfono debe tener exactamente 9 dígitos")
     .max(9, "El teléfono debe tener exactamente 9 dígitos")
     .regex(PHONE_REGEX, "El formato de teléfono es incorrecto. Debe comenzar con '09' y tener 9 dígitos (ej: 091234567)"),
+    
 });
 
 export const loginSchema = z.object({

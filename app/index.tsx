@@ -8,7 +8,8 @@ import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
   return <SafeAreaProvider style={styles.safeArea}>
-    <NavBar /> <ButtonPublicarMascota />
+    <NavBar /> 
+    <ButtonPublicarMascota />
     <ScrollView style={{ marginVertical: 50 }}>
       <View style={{
         flexGrow: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 0, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.39)', // Sombra para el botón
@@ -18,7 +19,7 @@ export default function Index() {
           style={styles.imagen}
         />
       </View>
-      <Text style={styles.texto}> "Encontrando Patitas" es una plataforma dedicada a reunir a mascotas perdidas con sus familias y a conectar a animales sin hogar con personas que desean adoptar. Nuestra misión es crear una comunidad compasiva donde cada patita encuentre su camino a casa.</Text>
+      <Text style={styles.texto}>"Encontrando Patitas" es una plataforma dedicada a reunir a mascotas perdidas con sus familias y a conectar a animales sin hogar con personas que desean adoptar. Nuestra misión es crear una comunidad compasiva donde cada patita encuentre su camino a casa.</Text>
       <View style={styles.card}>
         <Text style={styles.title}>Jornadas de castración</Text>
         <Image

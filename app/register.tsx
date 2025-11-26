@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 import { registerSchema } from "../lib/auth.schemas";
 
@@ -18,6 +19,8 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [perfilImage, setPerfilImage] = useState<string | null>(null);
+  const [image, setImage] = useState("");
 
   // Seleccionar URL según plataforma
   const getApiUrl = () => {
@@ -49,18 +52,75 @@ export default function Register() {
     );
   };
 
+  // Función para seleccionar imagen de perfil
+  // Selección de imagen
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPerfilImage(result.assets[0].uri);
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  // Subir a Cloudinary
+  const uploadImageToCloudinary = async (imageUri: any) => {
+    const data = new FormData();
+    if (Platform.OS === "web") {
+      // 1. Usamos fetch(imageUri) para cargar el archivo en la memoria del navegador como un Blob.
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      // 2. Adjuntamos el Blob al FormData con un nombre de archivo.
+      data.append("file", blob, "profile_upload.jpg");
+    } else {
+      data.append("file", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: "profile.jpg",
+      } as any);
+    }
+    data.append("upload_preset", "Encontrando_Patitas");
+    data.append("cloud_name", "dkn6snovy");
+
+    try {
+      let res = await fetch("https://api.cloudinary.com/v1_1/dkn6snovy/image/upload", {
+        method: "POST",
+        body: data,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      let json = await res.json();
+      return json.secure_url;
+
+    } catch (error) {
+      console.log("Error Cloudinary:", error);
+      return null;
+    }
+  };
+
+
   // Función de manejo de registro
   const handleRegister = async () => {
     setLoading(true);
     setErrors({});
 
     try {
-      // Validación con Zod
-      const result = registerSchema.safeParse({ username, phone, email, password });
+      // 1. Validar
+      const result = registerSchema.safeParse({
+        username,
+        phone,
+        email,
+        password,
+      });
 
       if (!result.success) {
         const newErrors: { [key: string]: string } = {};
-        result.error.issues.forEach(issue => {
+        result.error.issues.forEach((issue) => {
           const field = issue.path[0] as string;
           newErrors[field] = issue.message;
         });
@@ -69,37 +129,51 @@ export default function Register() {
         return;
       }
 
-      const API_URL = getApiUrl();
-      console.log('Enviando POST a:', `${API_URL}/register`, 'payload:', result.data);
-
-      // Llamada a la API
-      const response = await axios.post(`${API_URL}/register`, result.data);
-      console.log("Registro exitoso:", response.data);
-
-      // Guardar token
-      const token = response.data.token;
-      if (token) {
-        await AsyncStorage.setItem('userToken', token);
-        console.log("Token guardado en AsyncStorage");
+      // 2. Subir imagen SOLO UNA VEZ
+      let urlCloudinary = null;
+      if (image) {
+        urlCloudinary = await uploadImageToCloudinary(image);
+        console.log("URL Cloudinary:", urlCloudinary);
       }
 
-      // Limpiar campos
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setPhone('');
+      const API_URL = getApiUrl();
+
+      // 3. Registrar usuario con la URL de cloudinary
+      const response = await axios.post(`${API_URL}/register`, {
+        username,
+        phone,
+        email,
+        password,
+        perfilImage: urlCloudinary,
+      });
+
+      console.log("Registro exitoso:", response.data);
+
+      // 4. Guardar token
+      const token = response.data.token;
+      if (token) {
+        await AsyncStorage.setItem("userToken", token);
+      }
+
+      // 5. Limpiar
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setPhone("");
+      setImage("");
+      setPerfilImage(null);
+
       setLoading(false);
 
-      // Mostrar alerta y navegar al perfil
       showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/perfil");
 
     } catch (error: any) {
       console.error("Error de registro:", error.response?.data || error.message);
       setLoading(false);
-      const apiMessage = error.response?.data?.message || "Ocurrió un error en el servidor.";
-      showAlert("Error", apiMessage);
+      showAlert("Error", error.response?.data?.message || "Ocurrió un error.");
     }
   };
+
 
   // Función para mostrar errores
   const renderError = (field: string) => {
@@ -155,6 +229,12 @@ export default function Register() {
           />
           {renderError('password')}
 
+          <TextInput style={[styles.inputInicio, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
+          {!perfilImage && <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg, { marginTop: 15 }]} onPress={pickImage}>
+            <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
+          </TouchableOpacity>}
+          {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
+
           <TouchableOpacity
             style={styles.buttonsRegister}
             onPress={handleRegister}
@@ -163,7 +243,7 @@ export default function Register() {
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.textButtons}>REGISTRARSE</Text>
+              <Text style={styles.textButtons} >REGISTRARSE</Text>
             )}
           </TouchableOpacity>
 
@@ -265,4 +345,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  image: {
+    width: 160,
+    height: 160,
+    marginVertical: 10,
+    backgroundColor: "gray",
+    borderRadius: 80, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.29)',
+    alignSelf: "center" // Sombra para el botón
+  },
+  blanco: {
+    color: "#ffffff"
+  },
+  amarilloBg: {
+    backgroundColor: "#f7a423"
+  },
+  buttonsInicio: {
+    borderWidth: 2,
+    color: '#ffffff',
+    borderColor: 'white',
+    borderRadius: 40,
+    marginBottom: 20,
+    boxShadow: '0 6px 6px rgba(0, 0, 0, 0.39)', // Sombra para el botón
+    width: 240,
+    fontSize: 15,
+    height: 50,
+    alignItems: "center", // Centra el texto horizontalmente
+    justifyContent: "center", // Centra el texto verticalmente
+  },
+  inputInicio: {
+    height: 40,
+    width: 280,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginTop: 15,
+    paddingHorizontal: 10,
+  },
 });
+
+function dispatch(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+function updateProfileImage(url: any): any {
+  throw new Error("Function not implemented.");
+}
+

@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+      perfilImage: { 
+        type: String,
+        // URL por defecto si el usuario no sube ninguna
+        default: null,
+    }
   },
   {
     timestamps: true,
