@@ -7,7 +7,7 @@ export default function ButtonPublicarMascota() {
         <><TouchableOpacity
             style={[styles.selectButtonModal, styles.fixedButton]}
 
-            onPress={() => router.push('/publicarMascota')}
+            onPress={() => router.push('/publicarMascotaFormulario')}
         >
             <Text style={styles.blanco}>PUBLICAR UNA MASCOTA</Text>
         </TouchableOpacity></>

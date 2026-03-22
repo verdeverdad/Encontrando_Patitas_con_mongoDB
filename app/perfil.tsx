@@ -132,16 +132,9 @@ export default function PerfilScreen() {
   return (
     <ScrollView style={styles.container}>
       <NavBar />
-      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>PERFIL</Text>
+      <Text style={{ marginTop: 60, padding: 10, textAlign: "center", fontSize: 32, color: '#452790' }}>PERFIL</Text>
 
       <View style={styles.card}>
-        <Text style={styles.header}>Perfil del Usuario</Text>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>ID de Usuario:</Text>
-          <Text style={styles.value}>{user.id}</Text>
-        </View>
-
         <View style={styles.detailRow}>
           <Text style={styles.label}>Nombre:</Text>
           <Text style={styles.value}>{user.username}</Text>
@@ -219,7 +212,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     maxWidth: '60%',
-  },
+    textAlign: 'left',},
   separator: {
     height: 1,
     backgroundColor: '#ddd',

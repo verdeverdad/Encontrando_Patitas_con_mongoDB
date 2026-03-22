@@ -123,6 +123,12 @@ export default function RootLayout() {
               href: null,
             }}
           />
+            <Tabs.Screen
+            name="publicarMascotaFormulario"
+            options={{
+              href: null,
+            }}
+          />
              <Tabs.Screen
             name="editMascota"
             options={{

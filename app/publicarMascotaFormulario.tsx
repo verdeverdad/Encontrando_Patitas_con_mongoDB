@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
-import { registerSchema } from "../lib/auth.schemas";
+import { createMascotaSchema } from "../server/schemas/mascotas.schemas";
 
 // URLs según plataforma
 const API_BASE_URL_WEB = 'http://localhost:8000/api';
@@ -13,10 +13,10 @@ const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  IP local de la red 
 
 export default function Register() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [user, setUser] = useState('user');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [perfilImage, setPerfilImage] = useState<string | null>(null);
@@ -111,16 +111,16 @@ export default function Register() {
 
     try {
       // 1. Validar
-      const result = registerSchema.safeParse({
-        username,
-        phone,
-        email,
-        password,
+      const result = createMascotaSchema.safeParse({
+        user,
+        title,
+        description,
+        date,
       });
 
       if (!result.success) {
         const newErrors: { [key: string]: string } = {};
-        result.error.issues.forEach((issue) => {
+        result.error.issues.forEach((issue: any) => {
           const field = issue.path[0] as string;
           newErrors[field] = issue.message;
         });
@@ -139,15 +139,15 @@ export default function Register() {
       const API_URL = getApiUrl();
 
       // 3. Registrar usuario con la URL de cloudinary
-      const response = await axios.post(`${API_URL}/register`, {
-        username,
-        phone,
-        email,
-        password,
+      const response = await axios.post(`${API_URL}/mascota`, {
+        user,
+        title,
+        description,
+        date,
         perfilImage: urlCloudinary,
       });
 
-      console.log("Registro exitoso:", response.data);
+      console.log("Registro exitoso de mascota:", response.data);
 
       // 4. Guardar token
       const token = response.data.token;
@@ -156,16 +156,16 @@ export default function Register() {
       }
 
       // 5. Limpiar
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setPhone("");
+      setUser("");
+      setDescription("");
+      setDate("");
+      setTitle("");
       setImage("");
       setPerfilImage(null);
 
       setLoading(false);
 
-      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/perfil");
+      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/encontrados");
 
     } catch (error: any) {
       console.error("Error de registro:", error.response?.data || error.message);
@@ -186,54 +186,51 @@ export default function Register() {
   return (
     <>
       <NavBar />
-      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>REGISTRARSE</Text>
+      <Text style={{ marginTop: 60, padding: 10, textAlign: "center", fontSize: 32, color: '#452790' }}>PUBLICAR MASCOTA</Text>
 
       <ScrollView style={styles.container}>
         <View style={styles.containerInicioSesion}>
+          <Text style={styles.subtitle}>Por favor completa los datos de la mascota.</Text>
+          <TextInput
+            style={styles.inputRegister}
+            placeholder="Título de la Publicación"
+            value={title}
+            onChangeText={setTitle}
+          />
+          {renderError('title')}
 
+          <TextInput
+            style={styles.inputRegister}
+            placeholder="Descripción"
+            value={description}
+            onChangeText={setDescription}
+            autoCapitalize="none"
+          />
+          {renderError('description')}
           <TextInput
             style={styles.inputRegister}
             placeholder="Nombre de Usuario"
-            value={username}
-            onChangeText={setUsername}
+            value={user}
+            onChangeText={setUser}
             autoCapitalize="none"
           />
-          {renderError('username')}
+          {renderError('user')}
 
           <TextInput
             style={styles.inputRegister}
-            placeholder="Correo Electrónico"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {renderError('email')}
-
-          <TextInput
-            style={styles.inputRegister}
-            placeholder="Telefono"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
-          {renderError('phone')}
-
-          <TextInput
-            style={styles.inputRegister}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
+            placeholder="Fecha de publicación"
+            value={date}
+            onChangeText={setDate}
             secureTextEntry
           />
-          {renderError('password')}
+          {renderError('date')}
 
           <TextInput style={[styles.inputInicio, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
           {
-          !perfilImage && 
-          <TouchableOpacity style={styles.buttonsSelectImage} onPress={pickImage}>
-            <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
-          </TouchableOpacity>
+            !perfilImage &&
+            <TouchableOpacity style={styles.buttonsSelectImage} onPress={pickImage}>
+              <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
+            </TouchableOpacity>
           }
 
           {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
@@ -246,7 +243,7 @@ export default function Register() {
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.textButtons} >REGISTRARSE</Text>
+              <Text style={styles.textButtons} >PUBLICAR MASCOTA</Text>
             )}
           </TouchableOpacity>
 
@@ -343,6 +340,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 6,
   },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
   textButtons: {
     color: '#ffffff',
     fontSize: 16,
@@ -357,9 +360,9 @@ const styles = StyleSheet.create({
     borderRadius: 80, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.29)',
     alignSelf: "center" // Sombra para el botón
   },
- 
+
   buttonsSelectImage: {
- backgroundColor: '#f7a423',
+    backgroundColor: '#f7a423',
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginTop: 20,
@@ -384,7 +387,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     paddingHorizontal: 10,
   },
-   blanco: {
+  blanco: {
     color: "#ffffff"
   },
   amarilloBg: {

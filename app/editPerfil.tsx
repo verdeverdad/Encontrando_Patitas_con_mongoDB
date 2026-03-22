@@ -62,26 +62,26 @@ export default function EditarPerfilScreen() {
         );
     };
     // Selección de imagen
- const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-    });
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
 
-    if (!result.canceled) {
-        const localURI = result.assets[0].uri;
+        if (!result.canceled) {
+            const localURI = result.assets[0].uri;
 
-        console.log("Imagen seleccionada:", localURI);
- // Guardar imagen local para subirla al guardar cambios
-        setNewImage(localURI);
-        // 👇 ESTO es lo que hace que se vea al instante
-        setPerfilImage(localURI);
+            console.log("Imagen seleccionada:", localURI);
+            // Guardar imagen local para subirla al guardar cambios
+            setNewImage(localURI);
+            // 👇 ESTO es lo que hace que se vea al instante
+            setPerfilImage(localURI);
 
-        
-    }
-};
+
+        }
+    };
 
 
     // Subir a Cloudinary
@@ -162,47 +162,47 @@ export default function EditarPerfilScreen() {
     // ==========================================================
     // PASO 2: MANEJAR LA ACTUALIZACIÓN
     // ==========================================================
-  const handleUpdate = async () => {
-    setUpdateLoading(true);
+    const handleUpdate = async () => {
+        setUpdateLoading(true);
 
-    try {
-        let urlCloudinary = perfilImage; // valor actual por defecto
+        try {
+            let urlCloudinary = perfilImage; // valor actual por defecto
 
-        // SI SELECCIONÓ IMAGEN NUEVA → subir a Cloudinary
-        if (newImage) {
-            const uploadedUrl = await uploadImageToCloudinary(newImage);
-            if (!uploadedUrl) {
-                return showAlertAndRedirect("Error de Imagen", "No se pudo subir la imagen.");
+            // SI SELECCIONÓ IMAGEN NUEVA → subir a Cloudinary
+            if (newImage) {
+                const uploadedUrl = await uploadImageToCloudinary(newImage);
+                if (!uploadedUrl) {
+                    return showAlertAndRedirect("Error de Imagen", "No se pudo subir la imagen.");
+                }
+                urlCloudinary = uploadedUrl;
             }
-            urlCloudinary = uploadedUrl;
+
+            const token = await AsyncStorage.getItem("userToken");
+            const API_URL = getApiUrl();
+
+            const dataToUpdate = {
+                username,
+                phone,
+                email,
+                password: password || undefined,
+                perfilImage: urlCloudinary,  // 👈 ESTA LÍNEA ES LO IMPORTANTE
+            };
+
+            const response = await axios.put(`${API_URL}/profile`, dataToUpdate, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            console.log("Perfil actualizado:", response.data);
+
+            showAlertAndRedirect("Éxito", "Perfil actualizado correctamente", "/perfil");
+
+        } catch (error) {
+            console.error("Error:", error);
+            Alert.alert("Error", "No se pudo actualizar tu perfil.");
+        } finally {
+            setUpdateLoading(false);
         }
-
-        const token = await AsyncStorage.getItem("userToken");
-        const API_URL = getApiUrl();
-
-        const dataToUpdate = {
-            username,
-            phone,
-            email,
-            password: password || undefined,
-            perfilImage: urlCloudinary,  // 👈 ESTA LÍNEA ES LO IMPORTANTE
-        };
-
-        const response = await axios.put(`${API_URL}/profile`, dataToUpdate, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        console.log("Perfil actualizado:", response.data);
-
-        showAlertAndRedirect("Éxito", "Perfil actualizado correctamente", "/perfil");
-
-    } catch (error) {
-        console.error("Error:",  error);
-        Alert.alert("Error", "No se pudo actualizar tu perfil.");
-    } finally {
-        setUpdateLoading(false);
-    }
-};
+    };
 
     // Función para mostrar el error específico de un campo
     const renderError = (field: string) => {
@@ -224,9 +224,9 @@ export default function EditarPerfilScreen() {
     return (
         <ScrollView style={styles.container}>
             <NavBar />
+            <Text style={{ marginTop: 60, padding: 10, textAlign: "center", fontSize: 32, color: '#452790' }}>EDITAR PERFIL</Text>
 
-            <View style={[styles.card, { marginTop: 50 }]}>
-                <Text style={styles.header}>Editar Perfil</Text>
+            <View style={styles.card}>
                 <Text style={styles.subtitle}>Modifica los campos que desees actualizar.</Text>
 
                 <TextInput
@@ -268,10 +268,10 @@ export default function EditarPerfilScreen() {
 
 
                 {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
-                
+
                 <TextInput style={[styles.input, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
-              
-               <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg, { marginTop: 15 }]} onPress={pickImage}>
+
+                <TouchableOpacity style={[styles.buttonsInicio, styles.amarilloBg, { marginTop: 15 }]} onPress={pickImage}>
                     <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
                 </TouchableOpacity>
 
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
         marginLeft: 5,
     },
     saveButton: {
-        backgroundColor: '#f7a423',
+        backgroundColor: '#452790',
         paddingVertical: 12,
         marginTop: 30,
         borderRadius: 40,
@@ -392,16 +392,21 @@ const styles = StyleSheet.create({
         backgroundColor: "#f7a423"
     },
     buttonsInicio: {
+        backgroundColor: '#f7a423',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        width: 280,
+        alignItems: "center",
+        justifyContent: "center",
         borderWidth: 2,
-        color: '#ffffff',
         borderColor: 'white',
         borderRadius: 40,
-        marginBottom: 20,
-        boxShadow: '0 6px 6px rgba(0, 0, 0, 0.39)', // Sombra para el botón
-        width: 240,
-        fontSize: 15,
-        height: 50,
-        alignItems: "center", // Centra el texto horizontalmente
-        justifyContent: "center", // Centra el texto verticalmente
+        marginBottom: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.39,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
 });
