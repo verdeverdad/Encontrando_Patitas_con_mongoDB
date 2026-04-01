@@ -1,11 +1,15 @@
-import * as z from "zod";
+import { z } from "zod";
 
 export const createMascotaSchema = z.object({
-    title: z.string({
-        required_error: "El nombre de la mascota es obligatorio"
-    }),
-    description: z.string({
-        required_error: "La descripcion de la mascota es opcional"
-    }).optional(),
-    date: z.string().datetime().optional(),
+  title: z.string({ required_error: "El título es obligatorio" }),
+  description: z.string({ required_error: "La descripción es necesaria" }),
+  sexo: z.enum(["Macho", "Hembra", "No sabe"]).optional(),
+  edad: z.number().optional(),
+ localidad: z.string(),
+  traslado: z.string().optional(),
+  image: z.string().optional(),
+  categoria: z.enum({ required_error: "Selecciona una opción" })(["Perdido", "Encontrado", "En Adopción"]),
+  usuarioNombre: z.string({ required_error: "Tu nombre es obligatorio" }),
+  usuarioTelefono: z.string().optional(),
+ // date: z.string().datetime().optional(), // Por si querés mandar una fecha manual
 });

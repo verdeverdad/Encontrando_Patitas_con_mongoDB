@@ -21,6 +21,10 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [perfilImage, setPerfilImage] = useState<string | null>(null);
   const [image, setImage] = useState("");
+  const [localidad, setLocalidad] = useState('');
+  const [sexo, setSexo] = useState('No sabe'); // Valor por defecto
+  const [categoria, setCategoria] = useState('Perdido'); // Valor por defecto
+  const [telefono, setTelefono] = useState('');
 
   // Seleccionar URL según plataforma
   const getApiUrl = () => {
@@ -71,38 +75,41 @@ export default function Register() {
   // Subir a Cloudinary
   const uploadImageToCloudinary = async (imageUri: any) => {
     const data = new FormData();
+
     if (Platform.OS === "web") {
-      // 1. Usamos fetch(imageUri) para cargar el archivo en la memoria del navegador como un Blob.
       const response = await fetch(imageUri);
       const blob = await response.blob();
-      // 2. Adjuntamos el Blob al FormData con un nombre de archivo.
       data.append("file", blob, "profile_upload.jpg");
     } else {
+      // En mobile, el objeto debe ser exacto
       data.append("file", {
         uri: imageUri,
         type: "image/jpeg",
-        name: "profile.jpg",
+        name: "upload.jpg",
       } as any);
     }
+
     data.append("upload_preset", "Encontrando_Patitas");
-    data.append("cloud_name", "dkn6snovy");
 
     try {
       let res = await fetch("https://api.cloudinary.com/v1_1/dkn6snovy/image/upload", {
         method: "POST",
         body: data,
-        headers: { "Content-Type": "multipart/form-data" },
+        // ¡BORRÁ EL HEADER CONTENT-TYPE! Dejá que el sistema lo ponga solo.
       });
 
       let json = await res.json();
-      return json.secure_url;
-
+      if (json.secure_url) {
+        return json.secure_url;
+      } else {
+        console.log("Cloudinary Error JSON:", json);
+        return null;
+      }
     } catch (error) {
       console.log("Error Cloudinary:", error);
       return null;
     }
   };
-
 
   // Función de manejo de registro
   const handleRegister = async () => {
@@ -112,10 +119,15 @@ export default function Register() {
     try {
       // 1. Validar
       const result = createMascotaSchema.safeParse({
-        user,
+        usuarioNombre: user,
         title,
         description,
         date,
+        localidad,
+        sexo,
+        categoria,
+        usuarioTelefono: telefono,
+        
       });
 
       if (!result.success) {
@@ -138,15 +150,18 @@ export default function Register() {
 
       const API_URL = getApiUrl();
 
-      // 3. Registrar usuario con la URL de cloudinary
-      const response = await axios.post(`${API_URL}/mascota`, {
-        user,
+      // 3. Registrar mascota con la URL de cloudinary
+      const response = await axios.post(`${API_URL}/mascotas`, { // Ojo, pusiste /mascota (singular) y en el router es /mascotas (plural)
         title,
         description,
-        date,
-        perfilImage: urlCloudinary,
+        localidad,
+        categoria,
+        sexo,
+        usuarioNombre: user,
+        usuarioTelefono: telefono,
+        image: urlCloudinary, // La URL que te devolvió Cloudinary
+        date: new Date(),
       });
-
       console.log("Registro exitoso de mascota:", response.data);
 
       // 4. Guardar token
@@ -221,10 +236,44 @@ export default function Register() {
             placeholder="Fecha de publicación"
             value={date}
             onChangeText={setDate}
-            secureTextEntry
           />
           {renderError('date')}
+          {/* Input de Localidad - CLAVE PARA URUGUAY */}
+          <TextInput
+            style={styles.inputRegister}
+            placeholder="Localidad (Ej: Ciudad de la Costa)"
+            value={localidad}
+            onChangeText={setLocalidad}
+          />
+          {renderError('localidad')}
 
+          {/* Input de Teléfono de contacto */}
+          <TextInput
+            style={styles.inputRegister}
+            placeholder="Tu teléfono de contacto"
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="phone-pad"
+          />
+          {renderError('usuarioTelefono')}
+
+          {/* Selector simple para Categoría (Podés usar botones o un Picker) */}
+          <View style={styles.selectorContainer}>
+            <Text style={styles.label}>Estado de la mascota:</Text>
+            <View style={styles.row}>
+              {['Perdido', 'Encontrado', 'En Adopción'].map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  style={[styles.miniButton, categoria === item && styles.activeButton]}
+                  onPress={() => setCategoria(item)}
+                >
+                  <Text style={categoria === item ? styles.blanco : styles.negro}>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+            { // se guarda la url de la imagen en este input 
+            }
           <TextInput style={[styles.inputInicio, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
           {
             !perfilImage &&
@@ -393,6 +442,34 @@ const styles = StyleSheet.create({
   amarilloBg: {
     backgroundColor: "#f7a423"
   },
+  selectorContainer: {
+    marginTop: 15,
+    width: 280,
+  },
+  label: {
+    fontSize: 14,
+    color: '#452790',
+    marginBottom: 5,
+    fontWeight: 'bold'
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  miniButton: {
+    padding: 8,
+    borderRadius: 10,
+    backgroundColor: '#f7f7f7',
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  activeButton: {
+    backgroundColor: '#452790',
+    borderColor: '#452790',
+  },
+  negro: {
+    color: '#000'
+  }
 });
 
 function dispatch(arg0: any) {
