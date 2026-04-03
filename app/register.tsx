@@ -149,10 +149,13 @@ export default function Register() {
 
       console.log("Registro exitoso:", response.data);
 
-      // 4. Guardar token
+      // 4. Guardar token y datos del usuario
       const token = response.data.token;
       if (token) {
         await AsyncStorage.setItem("userToken", token);
+        await AsyncStorage.setItem("username", response.data.username);
+        await AsyncStorage.setItem("email", response.data.email);
+        await AsyncStorage.setItem("userId", response.data.id);
       }
 
       // 5. Limpiar

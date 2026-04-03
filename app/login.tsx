@@ -46,6 +46,9 @@ export default function LoginScreen() {
       }
 
       await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('username', resp.data.username);
+      await AsyncStorage.setItem('email', resp.data.email);
+      await AsyncStorage.setItem('userId', resp.data.id);
       showAlert('Bienvenido', 'Inicio de sesión correcto', '/perfil');
 
     } catch (err: any) {

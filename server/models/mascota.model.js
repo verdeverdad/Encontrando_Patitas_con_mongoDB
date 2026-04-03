@@ -11,7 +11,7 @@ const mascotaSchema = new mongoose.Schema(
       type: String,
       required: [true, "La descripción es necesaria"],
     },
-    // Nuevos campos basados en tu interface:
+    
     sexo: {
       type: String,
       enum: ["Macho", "Hembra", "No sabe"], // Evita errores de escritura

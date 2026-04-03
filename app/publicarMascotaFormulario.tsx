@@ -11,22 +11,50 @@ import { createMascotaSchema } from "../server/schemas/mascotas.schemas";
 const API_BASE_URL_WEB = 'http://localhost:8000/api';
 const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  IP local de la red LAN.
 
-export default function Register() {
+export default function PublicarMascota() {
   const router = useRouter();
-  const [user, setUser] = useState('user');
+  const [user, setUser] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [perfilImage, setPerfilImage] = useState<string | null>(null);
+  const [mascotaImagen, setMascotaImagen] = useState<string | null>(null);
   const [image, setImage] = useState("");
   const [localidad, setLocalidad] = useState('');
   const [sexo, setSexo] = useState('No sabe'); // Valor por defecto
   const [categoria, setCategoria] = useState('Perdido'); // Valor por defecto
   const [telefono, setTelefono] = useState('');
+  const [userToken, setUserToken] = useState<string | null>(null);
 
-  // Seleccionar URL según plataforma
+  // Obtener token y usuario al cargar el componente
+  React.useEffect(() => {
+    const getTokenAndUser = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const username = await AsyncStorage.getItem('username');
+        
+        setUserToken(token);
+        
+        if (username) {
+          setUser(username);
+          console.log("Usuario encontrado:", username);
+        } else {
+          console.warn("No hay usuario guardado. Por favor, inicia sesión.");
+          router.push("/login");
+        }
+        
+        if (token) {
+          console.log("Token obtenido exitosamente");
+        }
+      } catch (error) {
+        console.error("Error obteniendo datos:", error);
+      }
+    };
+    getTokenAndUser();
+  }, []);
+
+
   const getApiUrl = () => {
     if (Platform.OS === "web") {
       return API_BASE_URL_WEB;
@@ -67,7 +95,7 @@ export default function Register() {
     });
 
     if (!result.canceled) {
-      setPerfilImage(result.assets[0].uri);
+      setMascotaImagen(result.assets[0].uri);
       setImage(result.assets[0].uri);
     }
   };
@@ -76,59 +104,65 @@ export default function Register() {
   const uploadImageToCloudinary = async (imageUri: any) => {
     const data = new FormData();
 
-    if (Platform.OS === "web") {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      data.append("file", blob, "profile_upload.jpg");
-    } else {
-      // En mobile, el objeto debe ser exacto
-      data.append("file", {
-        uri: imageUri,
-        type: "image/jpeg",
-        name: "upload.jpg",
-      } as any);
-    }
+   try {
+      if (Platform.OS === "web") {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        data.append("file", blob);
+      } else {
+        // En mobile, el objeto debe tener esta estructura exacta
+        // Extraemos la extensión del archivo para el tipo
+        const uriParts = imageUri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
 
-    data.append("upload_preset", "Encontrando_Patitas");
+        data.append("file", {
+          uri: imageUri,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
 
-    try {
-      let res = await fetch("https://api.cloudinary.com/v1_1/dkn6snovy/image/upload", {
+      data.append("upload_preset", "Encontrando_Patitas");
+
+      const res = await fetch("https://api.cloudinary.com/v1_1/dkn6snovy/image/upload", {
         method: "POST",
         body: data,
-        // ¡BORRÁ EL HEADER CONTENT-TYPE! Dejá que el sistema lo ponga solo.
+        // IMPORTANTE: No pongas Content-Type header aquí, 
+        // el navegador/entorno lo hace automáticamente con el boundary correcto
       });
 
-      let json = await res.json();
-      if (json.secure_url) {
-        return json.secure_url;
-      } else {
-        console.log("Cloudinary Error JSON:", json);
+      const json = await res.json();
+      
+      if (!res.ok) {
+        console.error("Error Cloudinary:", json);
         return null;
       }
+
+      return json.secure_url;
     } catch (error) {
-      console.log("Error Cloudinary:", error);
+      console.error("Error en fetch Cloudinary:", error);
       return null;
     }
   };
 
-  // Función de manejo de registro
-  const handleRegister = async () => {
+  // Función de manejo de registro de mascota
+  const handlePublicarMascota = async () => {
     setLoading(true);
     setErrors({});
 
     try {
-      // 1. Validar
-      const result = createMascotaSchema.safeParse({
-        usuarioNombre: user,
+      // 1. Validar con Zod (Asegúrate que los nombres coincidan con mascotas.schemas.js)
+      const validationData = {
         title,
         description,
-        date,
         localidad,
         sexo,
         categoria,
+        usuarioNombre: user,
         usuarioTelefono: telefono,
-        
-      });
+      };
+
+      const result = createMascotaSchema.safeParse(validationData);
 
       if (!result.success) {
         const newErrors: { [key: string]: string } = {};
@@ -141,51 +175,52 @@ export default function Register() {
         return;
       }
 
-      // 2. Subir imagen SOLO UNA VEZ
-      let urlCloudinary = null;
+      // 2. Subir imagen
+      let urlCloudinary = "";
       if (image) {
-        urlCloudinary = await uploadImageToCloudinary(image);
-        console.log("URL Cloudinary:", urlCloudinary);
+        const uploadedUrl = await uploadImageToCloudinary(image);
+        if (!uploadedUrl) {
+          setLoading(false);
+          showAlert("Error", "No se pudo subir la imagen.");
+          return;
+        }
+        urlCloudinary = uploadedUrl;
+      }
+
+      // 3. Enviar al Backend
+      if (!userToken) {
+        setLoading(false);
+        showAlert("Error", "Sesión expirada. Inicia sesión nuevamente.");
+        return;
       }
 
       const API_URL = getApiUrl();
+      const payload = {
+        ...validationData,
+        image: urlCloudinary, // Aquí pasas la URL final
+        date: new Date().toISOString(), // Formato estándar
+      };
 
-      // 3. Registrar mascota con la URL de cloudinary
-      const response = await axios.post(`${API_URL}/mascotas`, { // Ojo, pusiste /mascota (singular) y en el router es /mascotas (plural)
-        title,
-        description,
-        localidad,
-        categoria,
-        sexo,
-        usuarioNombre: user,
-        usuarioTelefono: telefono,
-        image: urlCloudinary, // La URL que te devolvió Cloudinary
-        date: new Date(),
+      const response = await axios.post(`${API_URL}/mascotas`, payload, {
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        }
       });
-      console.log("Registro exitoso de mascota:", response.data);
 
-      // 4. Guardar token
-      const token = response.data.token;
-      if (token) {
-        await AsyncStorage.setItem("userToken", token);
-      }
-
-      // 5. Limpiar
-      setUser("");
-      setDescription("");
-      setDate("");
+      showAlert("¡Éxito!", "Mascota publicada correctamente", "/encontrados");
+      
+      // Limpiar campos
       setTitle("");
+      setDescription("");
       setImage("");
-      setPerfilImage(null);
-
-      setLoading(false);
-
-      showAlert("Registro Exitoso", "¡Tu cuenta ha sido creada!", "/encontrados");
+      setMascotaImagen(null);
 
     } catch (error: any) {
-      console.error("Error de registro:", error.response?.data || error.message);
+      console.error("Error completo:", error.response?.data || error.message);
+      showAlert("Error", error.response?.data?.message || "Error al conectar con el servidor.");
+    } finally {
       setLoading(false);
-      showAlert("Error", error.response?.data?.message || "Ocurrió un error.");
     }
   };
 
@@ -206,6 +241,7 @@ export default function Register() {
       <ScrollView style={styles.container}>
         <View style={styles.containerInicioSesion}>
           <Text style={styles.subtitle}>Por favor completa los datos de la mascota.</Text>
+           <Text style={styles.label}>Título de la Publicación:</Text>
           <TextInput
             style={styles.inputRegister}
             placeholder="Título de la Publicación"
@@ -222,26 +258,10 @@ export default function Register() {
             autoCapitalize="none"
           />
           {renderError('description')}
+         
           <TextInput
             style={styles.inputRegister}
-            placeholder="Nombre de Usuario"
-            value={user}
-            onChangeText={setUser}
-            autoCapitalize="none"
-          />
-          {renderError('user')}
-
-          <TextInput
-            style={styles.inputRegister}
-            placeholder="Fecha de publicación"
-            value={date}
-            onChangeText={setDate}
-          />
-          {renderError('date')}
-          {/* Input de Localidad - CLAVE PARA URUGUAY */}
-          <TextInput
-            style={styles.inputRegister}
-            placeholder="Localidad (Ej: Ciudad de la Costa)"
+            placeholder="Localidad"
             value={localidad}
             onChangeText={setLocalidad}
           />
@@ -276,17 +296,17 @@ export default function Register() {
             }
           <TextInput style={[styles.inputInicio, { display: "none" }]} placeholder="Ingrese URL de la imagen" value={image} onChangeText={setImage} />
           {
-            !perfilImage &&
+            !mascotaImagen &&
             <TouchableOpacity style={styles.buttonsSelectImage} onPress={pickImage}>
               <Text style={styles.blanco}>SELECCIONAR IMAGEN</Text>
             </TouchableOpacity>
           }
 
-          {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
+          {mascotaImagen && <Image source={{ uri: mascotaImagen }} style={styles.image} />}
 
           <TouchableOpacity
             style={styles.buttonsRegister}
-            onPress={handleRegister}
+            onPress={handlePublicarMascota}
             disabled={loading}
           >
             {loading ? (
@@ -418,6 +438,7 @@ const styles = StyleSheet.create({
     width: 280,
     alignItems: "center",
     justifyContent: "center",
+    fontSize: 6,
     borderWidth: 2,
     borderColor: 'white',
     borderRadius: 40,
@@ -450,18 +471,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#452790',
     marginBottom: 5,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'left',
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    paddingVertical: 5,
+    gap: 4,
   },
   miniButton: {
-    padding: 8,
-    borderRadius: 10,
-    backgroundColor: '#f7f7f7',
-    borderWidth: 1,
-    borderColor: '#ccc',
+   paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "#e0e0e0",
   },
   activeButton: {
     backgroundColor: '#452790',
@@ -472,10 +496,4 @@ const styles = StyleSheet.create({
   }
 });
 
-function dispatch(arg0: any) {
-  throw new Error("Function not implemented.");
-}
-function updateProfileImage(url: any): any {
-  throw new Error("Function not implemented.");
-}
 

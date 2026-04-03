@@ -1,13 +1,15 @@
+import ButtonPublicarMascota from "@/components/ButtonPublicarMascota";
+import MascotasLista from "@/components/mascotasLista";
 import React from "react";
 import { Text } from "react-native";
 import { NavBar } from "../components/NavBar";
-import PublicarMascota from "./publicarMascota";
 
 export default function Perdidos() {
 
   return <>
           <NavBar active="perdidos" />
     <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL PERDIDOS</Text> 
-  <PublicarMascota />
+  <ButtonPublicarMascota />
+  <MascotasLista filtroValor="Perdido" />
   </>
 }

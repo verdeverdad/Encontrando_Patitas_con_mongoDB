@@ -175,6 +175,7 @@ export default function EditarPerfilScreen() {
                     return showAlertAndRedirect("Error de Imagen", "No se pudo subir la imagen.");
                 }
                 urlCloudinary = uploadedUrl;
+                
             }
 
             const token = await AsyncStorage.getItem("userToken");
@@ -185,7 +186,7 @@ export default function EditarPerfilScreen() {
                 phone,
                 email,
                 password: password || undefined,
-                perfilImage: urlCloudinary,  // 👈 ESTA LÍNEA ES LO IMPORTANTE
+                perfilImage: urlCloudinary,  
             };
 
             const response = await axios.put(`${API_URL}/profile`, dataToUpdate, {

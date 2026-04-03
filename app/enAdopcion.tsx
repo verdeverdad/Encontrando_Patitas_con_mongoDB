@@ -1,4 +1,5 @@
 import ButtonPublicarMascota from "@/components/ButtonPublicarMascota";
+import MascotasLista from "@/components/mascotasLista";
 import { router } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity } from "react-native";
@@ -13,7 +14,10 @@ export default function EnAdopcion() {
   <ButtonPublicarMascota />
     <TouchableOpacity>
         <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 24, color: 'blue' }} onPress={() =>router.push('/register')}>REGISTRARSE</Text>
-  </TouchableOpacity></>
+  </TouchableOpacity>
+  <MascotasLista filtroValor="En Adopción" />
+  </>
+  
 
 }
 

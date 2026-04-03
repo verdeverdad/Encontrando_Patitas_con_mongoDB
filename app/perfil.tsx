@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
-import { useFocusEffect, useRouter } from "expo-router"; // ✅ Agregar useFocusEffect
-import React, { useCallback, useState } from "react"; // ✅ Agregar useCallback
+import { useFocusEffect, useRouter } from "expo-router"; // Agregar useFocusEffect
+import React, { useCallback, useState } from "react"; // Agregar useCallback
 import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 
