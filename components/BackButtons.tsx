@@ -1,23 +1,42 @@
-import { useNavigation } from "@react-navigation/native";
-import React from "react";
-import { Button, View } from "react-native";
+import { useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export const BackButton = () => {
-  const navigation = useNavigation();
-
-  if (!navigation.canGoBack()) {
-    return null;
-  }
+  const router = useRouter();
 
   const volver = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
+    if (router.canGoBack()) {
+      router.back();
     }
   };
 
   return (
-    <View style={{ marginLeft: 20 }}>
-      {navigation.canGoBack() && <Button title="volver" onPress={volver} />}
+    <View style={styles.container}>
+      {/* Verificamos si hay historia para volver */}
+      {router.canGoBack() && (
+        <TouchableOpacity style={styles.button} onPress={volver}>
+          <Text style={styles.text}>Volver</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginLeft: 20,
+    marginTop: 10, // Un poco de aire arriba
+  },
+  button: {
+    backgroundColor: '#452790', 
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  text: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  }
+});

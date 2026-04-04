@@ -1,9 +1,13 @@
 import axios from "axios";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
+  Linking,
+  Modal,
   Platform,
   StyleSheet,
   Text,
@@ -27,13 +31,14 @@ interface Mascota {
   localidad: string;
   image: string;
   usuarioTelefono: string;
-  
+
 }
 
 export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaProps) {
   const [mascotas, setMascotas] = useState<Mascota[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imgAmpliada, setImgAmpliada] = useState("");
   // Estado interno por si queremos cambiar el filtro dentro de la misma pantalla
   const [filtroInterno, setFiltroInterno] = useState(filtroValor);
 
@@ -53,7 +58,7 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
     }
   };
 
- useEffect(() => {
+  useEffect(() => {
     fetchMascotas();
   }, []);
 
@@ -61,34 +66,75 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
   useEffect(() => {
     setFiltroInterno(filtroValor);
   }, [filtroValor]);
-// Lógica de filtrado
-  const mascotasFiltradas = filtroInterno === "Todos" 
-    ? mascotas 
+  // Lógica de filtrado
+  const mascotasFiltradas = filtroInterno === "Todos"
+    ? mascotas
     : mascotas.filter(m => m.categoria.toLowerCase() === filtroInterno.toLowerCase());
+
 
   const renderItem = ({ item }: { item: Mascota }) => (
     <View style={styles.card}>
-      <Image 
-        source={{ uri: item.image || 'https://via.placeholder.com/150' }} 
-        style={styles.cardImage} 
-      />
+      <TouchableOpacity onPress={() => {
+        setImgAmpliada(item.image);
+        setModalVisible(true);
+      }}>
+        <Image
+          source={{ uri: item.image || 'https://via.placeholder.com/150' }}
+          style={styles.cardImage}
+        />
+      </TouchableOpacity>
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>{item.title}</Text>
-          <View style={[
-            styles.badge, 
-            { backgroundColor: item.categoria === 'Perdido' ? '#f01250' :  '#f7a423' }
-          ]}>
-            <Text style={styles.badgeText}>{item.categoria}</Text>
-          </View>
+        </View>
+        <View style={[styles.badge,
+        { backgroundColor: item.categoria === 'Perdido' ? '#f01250' : item.categoria === 'Encontrado' ? '#452790' : '#f7a423' }
+        ]}>
+          <Text style={styles.badgeText}>{item.categoria}</Text>
         </View>
         <Text style={styles.cardLocation}>📍 {item.localidad}</Text>
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
+        <Text style={styles.cardDescription} numberOfLines={2}>{item.description}</Text>
+        <TouchableOpacity onPress={() => router.push('/mascota')}>
+          <Text>ver mas..</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.selectButton,
+            !item.usuarioTelefono && styles.disabledButton
+          ]}
+          onPress={() => handleContactPress(item.usuarioTelefono ?? null)}
+          disabled={!item.usuarioTelefono}
+        >
+          <Text style={[styles.blanco, { fontSize: 12, letterSpacing: 0.5 }]}>CONTACTAR</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
+
+  // --- Función para abrir WhatsApp ---
+  const handleContactPress = async (telefono: string | null) => {
+    if (!telefono) {
+      Alert.alert("Sin contacto", "El usuario no ha proporcionado un número de teléfono.");
+      return;
+    }
+
+    const numeroLimpio = telefono.replace(/[\s-()]/g, '');
+    const url = `whatsapp://send?phone=${numeroLimpio}`;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Error", `No se puede abrir WhatsApp. Asegúrate de que esté instalado.`);
+      }
+    } catch (error) {
+      console.error("Error al intentar abrir WhatsApp:", error);
+      Alert.alert("Error", "Ocurrió un problema al intentar contactar por WhatsApp.");
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -122,6 +168,31 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
           }
         />
       )}
+
+      {/* Modal para ver la imagen ampliada */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalFull}>
+          <TouchableOpacity
+            activeOpacity={1} // Evita que la imagen parpadee al tocarla
+            style={styles.modalCerrarArea}
+            onPress={() => setModalVisible(false)}
+          >
+            <Image
+              source={{ uri: imgAmpliada }}
+              style={styles.imageFull}
+              resizeMode="contain" // Esto es vital para que no se corte ni se vea minúscula
+            />
+            <View style={styles.textoCerrar}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Toca para volver</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -169,7 +240,7 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "#fff",
-    borderRadius: 15,
+    borderRadius: 10,
     marginBottom: 15,
     flexDirection: "row",
     overflow: "hidden",
@@ -185,8 +256,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardImage: {
-    width: 120,
-    height: 120,
+    width: 130,
+    height: 150,
   },
   cardContent: {
     flex: 1,
@@ -203,25 +274,108 @@ const styles = StyleSheet.create({
     color: "#666",
     marginVertical: 2,
   },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 5,
-    marginVertical: 5,
-  },
-  badgeText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
   cardDescription: {
     fontSize: 13,
     color: "#444",
   },
+  badge: {
+    position: "absolute", // Lo saca del flujo normal
+    top: 0,               // Pegado arriba
+    right: 0,             // Pegado a la derecha
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderBottomLeftRadius: 10, // Opcional: queda estético redondear solo la esquina interna
+    zIndex: 1, // Asegura que quede por encima de la imagen o texto
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 8,
+    fontWeight: "bold",
+  },
+
   emptyText: {
     textAlign: "center",
     marginTop: 50,
     color: "#999",
+  },
+  selectButton: {
+    position: "absolute",
+    right: 2,
+    bottom: 6,
+    backgroundColor: "#20b548",
+    color: '#e1e1e1',
+    borderWidth: 2,
+    borderColor: 'white',
+    borderRadius: 40,
+    marginBottom: 0,
+    marginTop: 10,
+    elevation: 6,           // Sombra para Android
+    shadowColor: "#000",    // Sombra para iOS
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.69,
+    shadowRadius: 4.65,
+    paddingHorizontal: 10,
+    height: 34,
+    alignItems: "center", // Centra el texto horizontalmente
+    justifyContent: "space-around", // Centra el texto verticalmente
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: '#a0a0a0', // Color grisáceo para deshabilitado
+    opacity: 0.7,
+  },
+  blanco: {
+    color: "#ffffff", paddingRight: 2, fontWeight: "bold"
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)', // Fondo negro con opacidad
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: '95%',
+    height: '80%',
+  },
+  cerrarTexto: {
+    color: '#fff',
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#452790',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  modalFull: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)', // Fondo oscuro
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCerrarArea: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageFull: {
+    width: '90%',
+    height: '70%',
+  },
+  textoCerrar: {
+    color: 'white',
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#452790',
+    padding: 10,
+    borderRadius: 20
   }
 });

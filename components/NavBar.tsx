@@ -23,7 +23,8 @@ export const NavBar = ({ active }: { active?: NavBarOption }) => {  //define com
 const styles = StyleSheet.create({
   active: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 18,
+    color: "#422790",
     textShadowColor: "#440a39ff",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10
