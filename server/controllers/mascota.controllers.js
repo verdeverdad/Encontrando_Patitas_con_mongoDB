@@ -1,5 +1,15 @@
 import Mascota from "../models/mascota.model.js";
 
+// OBTENER TODAS LAS MASCOTAS PÚBLICAS
+export const getAllMascotas = async (req, res) => {
+  try {
+    const mascotas = await Mascota.find({});
+    res.json(mascotas);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 // OBTENER TODAS LAS MASCOTAS DEL USUARIO (Para su perfil)
 export const getMascotas = async (req, res) => {
   try {

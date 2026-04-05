@@ -7,9 +7,9 @@ import { NavBar } from "../components/NavBar";
 export default function Perdidos() {
 
   return <>
-          <NavBar active="perdidos" />
-    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL PERDIDOS</Text> 
-  <ButtonPublicarMascota />
-  <MascotasLista filtroValor="Perdido" />
+    <NavBar active="perdidos" />
+    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL PERDIDOS</Text>
+    <ButtonPublicarMascota />
+    <MascotasLista filtroValor="Perdido" />
   </>
 }

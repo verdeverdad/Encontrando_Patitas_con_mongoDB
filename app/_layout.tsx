@@ -117,12 +117,7 @@ export default function RootLayout() {
               href: null,
             }}
           />
-          <Tabs.Screen
-            name="publicarMascota"
-            options={{
-              href: null,
-            }}
-          />
+         
             <Tabs.Screen
             name="publicarMascotaFormulario"
             options={{

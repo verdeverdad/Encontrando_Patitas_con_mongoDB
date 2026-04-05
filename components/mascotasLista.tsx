@@ -21,7 +21,7 @@ const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api';
 
 // Definición de las Props
 interface MascotasListaProps {
-  filtroValor?: "Perdido" | "Encontrado" | "En Adopción" | "Todos";
+  filtroValor?: "Perdido" | "Encontrado" | "En Adopción";
 }
 interface Mascota {
   _id: string;
@@ -34,13 +34,12 @@ interface Mascota {
 
 }
 
-export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaProps) {
+export default function MascotasLista({ filtroValor }: MascotasListaProps) {
   const [mascotas, setMascotas] = useState<Mascota[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [imgAmpliada, setImgAmpliada] = useState("");
-  // Estado interno por si queremos cambiar el filtro dentro de la misma pantalla
-  const [filtroInterno, setFiltroInterno] = useState(filtroValor);
+
 
   const getApiUrl = () => {
     return Platform.OS === "web" ? API_BASE_URL_WEB : API_BASE_URL_EXPO;
@@ -49,7 +48,7 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
   const fetchMascotas = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${getApiUrl()}/mascotas`);
+      const response = await axios.get(`${getApiUrl()}/mascotas/public`);
       setMascotas(response.data);
     } catch (error) {
       console.error("Error al obtener mascotas:", error);
@@ -62,15 +61,7 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
     fetchMascotas();
   }, []);
 
-  // Sincronizar el filtro interno si la prop cambia
-  useEffect(() => {
-    setFiltroInterno(filtroValor);
-  }, [filtroValor]);
   // Lógica de filtrado
-  const mascotasFiltradas = filtroInterno === "Todos"
-    ? mascotas
-    : mascotas.filter(m => m.categoria.toLowerCase() === filtroInterno.toLowerCase());
-
 
   const renderItem = ({ item }: { item: Mascota }) => (
     <View style={styles.card}>
@@ -138,28 +129,26 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
 
   return (
     <View style={styles.container}>
-      {/* Solo mostramos la barra de filtros si no se especificó un filtro fijo o si es "Todos" */}
-      {filtroValor === "Todos" && (
-        <View style={styles.filterBar}>
-          {["Todos", "Perdido", "Encontrado", "En Adopción"].map((opcion) => (
-            <TouchableOpacity
-              key={opcion}
-              style={[styles.filterButton, filtroInterno === opcion && styles.filterActive]}
-              onPress={() => setFiltroInterno(opcion as any)}
-            >
-              <Text style={[styles.filterText, filtroInterno === opcion && styles.filterTextActive]}>
-                {opcion}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+
 
       {loading ? (
         <ActivityIndicator size="large" color="#452790" style={{ marginTop: 20 }} />
       ) : (
         <FlatList
-          data={mascotasFiltradas}
+          data={
+            filtroValor
+              ? mascotas.filter((m) => {
+                const normalizar = (str: string) =>
+                  str
+                    .trim()
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, ""); // Quita tildes
+
+                return normalizar(m.categoria) === normalizar(filtroValor);
+              })
+              : mascotas
+          }
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
@@ -188,7 +177,7 @@ export default function MascotasLista({ filtroValor = "Todos" }: MascotasListaPr
               resizeMode="contain" // Esto es vital para que no se corte ni se vea minúscula
             />
             <View style={styles.textoCerrar}>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>Toca para volver</Text>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Cerrar</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -201,6 +190,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f7f7f7",
+    marginBottom: 60,
   },
   headerTitle: {
     marginTop: 70,
