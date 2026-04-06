@@ -175,7 +175,7 @@ export default function EditarPerfilScreen() {
                     return showAlertAndRedirect("Error de Imagen", "No se pudo subir la imagen.");
                 }
                 urlCloudinary = uploadedUrl;
-                
+
             }
 
             const token = await AsyncStorage.getItem("userToken");
@@ -186,7 +186,7 @@ export default function EditarPerfilScreen() {
                 phone,
                 email,
                 password: password || undefined,
-                perfilImage: urlCloudinary,  
+                perfilImage: urlCloudinary,
             };
 
             const response = await axios.put(`${API_URL}/profile`, dataToUpdate, {
@@ -229,15 +229,17 @@ export default function EditarPerfilScreen() {
 
             <View style={styles.card}>
                 <Text style={styles.subtitle}>Modifica los campos que desees actualizar.</Text>
-
+                <Text nativeID="formLabel">Nombre:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Nombre de Usuario"
                     value={username}
                     onChangeText={setUsername}
+                    accessibilityLabel="input"
+                    accessibilityLabelledBy="formLabel"
                 />
                 {renderError('username')}
-
+                <Text nativeID="formLabel">Email:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Correo Electrónico"
@@ -245,19 +247,23 @@ export default function EditarPerfilScreen() {
                     onChangeText={setEmail}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    accessibilityLabel="input"
+                    accessibilityLabelledBy="formLabel"
                 />
                 {renderError('email')}
-
+                <Text nativeID="formLabel">Teléfono:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Telefono"
                     value={phone}
                     onChangeText={setPhone}
                     keyboardType="phone-pad"
+                    accessibilityLabel="input"
+                    accessibilityLabelledBy="formLabel"
                 />
                 {renderError('phone')}
 
-                {/* Campo de contraseña es opcional para actualizar */}
+                {/* Campo de contraseña es opcional para actualizar 
                 <TextInput
                     style={styles.input}
                     placeholder="Contraseña (dejar vacío si no quieres cambiar)"
@@ -266,7 +272,7 @@ export default function EditarPerfilScreen() {
                     secureTextEntry
                 />
                 {renderError('password')}
-
+*/}
 
                 {perfilImage && <Image source={{ uri: perfilImage }} style={styles.image} />}
 
@@ -393,21 +399,15 @@ const styles = StyleSheet.create({
         backgroundColor: "#f7a423"
     },
     buttonsInicio: {
-        backgroundColor: '#f7a423',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        marginTop: 20,
-        width: 280,
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 2,
-        borderColor: 'white',
+       backgroundColor: '#f7a423',
+        paddingVertical: 12,
+        marginTop: 15,
         borderRadius: 40,
-        marginBottom: 10,
+        alignItems: "center",
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.39,
-        shadowRadius: 4.65,
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
         elevation: 6,
     },
 });

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useFocusEffect, useRouter } from "expo-router"; // Agregar useFocusEffect
 import React, { useCallback, useState } from "react"; // Agregar useCallback
-import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -21,7 +21,8 @@ export default function PerfilScreen() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imgAmpliada, setImgAmpliada] = useState("");
 
   const getApiUrl = () => {
     if (Platform.OS === "web") {
@@ -129,27 +130,33 @@ export default function PerfilScreen() {
     );
   }
 
-  return (
+  return (<>
+    <NavBar />
     <ScrollView style={styles.container}>
-      <NavBar />
-      <Text style={{ marginTop: 60, padding: 10, textAlign: "center", fontSize: 32, color: '#452790' }}>PERFIL</Text>
-
+      {/* Card datos del usuario */}
       <View style={styles.card}>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Nombre:</Text>
-          <Text style={styles.value}>{user.username}</Text>
+        <TouchableOpacity onPress={() => {
+          setImgAmpliada(user.perfilImage);
+          setModalVisible(true);
+        }}>
+          <Image
+            source={{ uri: user.perfilImage || 'https://via.placeholder.com/150' }}
+            style={styles.imageFlat}
+          />
+        </TouchableOpacity>
+        <View >
+          <Text style={styles.nombre}>{user.username}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Email:</Text>
-          <Text style={styles.value}>{user.email}</Text>
+          <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">{user.email}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Teléfono:</Text>
-          <Text style={styles.value}>{user.phone}</Text>
+          <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">{user.phone}</Text>
         </View>
-        <Image source={{ uri: user.perfilImage }} style={styles.imageFlat} />
 
         <View style={styles.separator} />
 
@@ -162,8 +169,97 @@ export default function PerfilScreen() {
           <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
         </TouchableOpacity>
 
+        {/* Modal para ver la imagen ampliada */}
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalFull}>
+            <TouchableOpacity
+              activeOpacity={1} // Evita que la imagen parpadee al tocarla
+              style={styles.modalCerrarArea}
+              onPress={() => setModalVisible(false)}
+            >
+              <Image
+                source={{ uri: imgAmpliada }}
+                style={styles.imageFull}
+                resizeMode="contain" // Esto es vital para que no se corte ni se vea minúscula
+              />
+              <View style={styles.textoCerrar}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Cerrar</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
+      </View>
+<Text style={styles.titulo}>Mis publicaciones</Text>
+      {/* Card datos demascotas publicadas por el usuario */}
+      <View style={styles.cardMascotas}>
+        <TouchableOpacity onPress={() => {
+          setImgAmpliada(user.perfilImage);
+          setModalVisible(true);
+        }}>
+          <Image
+            source={{ uri: user.perfilImage || 'https://via.placeholder.com/150' }}
+            style={styles.imageFlat}
+          />
+        </TouchableOpacity>
+        <View >
+          <Text style={styles.nombre}>{user.username}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">{user.email}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Teléfono:</Text>
+          <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">{user.phone}</Text>
+        </View>
+
+        <View style={styles.separator} />
+
+        {/* Botón para editar perfil */}
+        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+          <Text style={styles.textButtons}>EDITAR PERFIL</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.textButtons}>CERRAR SESIÓN</Text>
+        </TouchableOpacity>
+
+        {/* Modal para ver la imagen ampliada */}
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalFull}>
+            <TouchableOpacity
+              activeOpacity={1} // Evita que la imagen parpadee al tocarla
+              style={styles.modalCerrarArea}
+              onPress={() => setModalVisible(false)}
+            >
+              <Image
+                source={{ uri: imgAmpliada }}
+                style={styles.imageFull}
+                resizeMode="contain" // Esto es vital para que no se corte ni se vea minúscula
+              />
+              <View style={styles.textoCerrar}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Cerrar</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
       </View>
     </ScrollView>
+  </>
   );
 
 }
@@ -179,6 +275,18 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
   },
   card: {
+    margin: 20,
+    marginTop: 70,
+    padding: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  cardMascotas: {
     margin: 20,
     padding: 20,
     backgroundColor: '#ffffff',
@@ -198,21 +306,30 @@ const styles = StyleSheet.create({
   },
   detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     paddingVertical: 10,
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+  },
+  nombre: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#422790',
+    textAlign: "center"
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+    marginRight: 10,
   },
   value: {
     fontSize: 16,
+    flex: 1,
+    minWidth: 0,
     color: '#666',
-    maxWidth: '60%',
-    textAlign: 'left',},
+    textAlign: 'right',
+  },
   separator: {
     height: 1,
     backgroundColor: '#ddd',
@@ -275,4 +392,36 @@ const styles = StyleSheet.create({
   imageFlat: {
     width: 160, height: 160, marginVertical: 10, backgroundColor: "gray", borderRadius: 80, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.29)', alignSelf: "center" // Sombra para el botón
   },
+  modalFull: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)', // Fondo oscuro
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCerrarArea: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageFull: {
+    width: '90%',
+    height: '70%',
+  },
+  textoCerrar: {
+    color: 'white',
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#452790',
+    padding: 10,
+    borderRadius: 20
+  },
+  titulo: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#452790",
+    
+  }
 });
