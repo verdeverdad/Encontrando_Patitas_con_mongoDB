@@ -14,7 +14,9 @@
 
    **Perfil** 05-04-2026  
 
-  - *Mejora de presentación de perfil*: Se implamenta modal para amplificar la foto de perfil cuando el usuario toca la imagen.
+  - *Mejora de presentación de perfil*: Se implamenta modal para amplificar la foto de perfil cuando el usuario toca la imagen. Se ordenan los inputs para que sea mas amigable la informacion
+  
+  - *Card mascotas en perfil*: se colocan las mascotas publicadas por el usuario en la sección del perfil exactamente iguales a las publicadas con el boton para eliminar y editar
 
   - *Modificación de botón de publicar mascotas*: Se ajustó (achicó) el tamaño del boton y el padding para mejorar el uso del espacio negativo
 
@@ -23,9 +25,16 @@
 ## Perfil
 
   - Implementacion de funcionalidad para mostrar las mascotas que publico el usuario
+  - implementación de funcionalidad para eliminar las mascotas publicadas
+  - botton de editar mascota colocado falta implementar la funcionalidad
 
 ## BUGS PENDIENTES
 
 - Editar perfil no se pueden editar los datos
+- Editar mascotas funcionalidad
+- gestionar contraseña como se edita
+- implementar "Olvidó su contraseña"
+- editar perfil: *boton de seleccionar imagen *imagen nueva no se muestra mientras esta en editPerfil
+- ubicar el registro y el inicio de secion y recuperar contraseña
 
   

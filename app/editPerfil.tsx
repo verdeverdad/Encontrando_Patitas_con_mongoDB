@@ -229,7 +229,7 @@ export default function EditarPerfilScreen() {
 
             <View style={styles.card}>
                 <Text style={styles.subtitle}>Modifica los campos que desees actualizar.</Text>
-                <Text nativeID="formLabel">Nombre:</Text>
+                <Text nativeID="formLabel" style={styles.label}>Nombre:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Nombre de Usuario"
@@ -239,7 +239,7 @@ export default function EditarPerfilScreen() {
                     accessibilityLabelledBy="formLabel"
                 />
                 {renderError('username')}
-                <Text nativeID="formLabel">Email:</Text>
+                <Text nativeID="formLabel" style={styles.label}>Email:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Correo Electrónico"
@@ -251,7 +251,7 @@ export default function EditarPerfilScreen() {
                     accessibilityLabelledBy="formLabel"
                 />
                 {renderError('email')}
-                <Text nativeID="formLabel">Teléfono:</Text>
+                <Text nativeID="formLabel" style={styles.label}>Teléfono:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Telefono"
@@ -338,14 +338,19 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
     },
+    label: {
+        fontSize: 14,
+        color: '#333',
+        marginTop: 10,
+    },
     input: {
         width: '100%',
         height: 45,
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 8,
-        marginTop: 15,
-        paddingHorizontal: 15,
+        marginTop: 6,
+        padding: 5,
         backgroundColor: '#f7f7f7',
     },
     errorText: {
