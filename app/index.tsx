@@ -2,8 +2,9 @@ import ButtonPublicarMascota from "@/components/ButtonPublicarMascota";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavBar } from "../components/NavBar";
 
+import { router } from "expo-router";
 import React from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 
 export default function Index() {
@@ -11,6 +12,9 @@ export default function Index() {
     <NavBar /> 
     <ButtonPublicarMascota />
     <ScrollView style={{ marginVertical: 50 }}>
+      <TouchableOpacity>
+            <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 24, color: 'blue' }} onPress={() => router.push('/register')}>REGISTRARSE</Text>
+          </TouchableOpacity>
       <View style={{
         flexGrow: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 0, boxShadow: '0 6px 6px rgba(0, 0, 0, 0.39)', // Sombra para el botón
       }}>

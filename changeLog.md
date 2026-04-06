@@ -14,8 +14,15 @@
 
    **Perfil** 05-04-2026  
 
-  - *Mejora de imagen de perfil*: Se implamenta modal para amplificar la foto de perfil cuando el usuario toca la imagen.
+  - *Mejora de presentación de perfil*: Se implamenta modal para amplificar la foto de perfil cuando el usuario toca la imagen.
 
+  - *Modificación de botón de publicar mascotas*: Se ajustó (achicó) el tamaño del boton y el padding para mejorar el uso del espacio negativo
+
+  - *Implementación de los ttulos de las diferentes pestañas*: Se optimizaron los titulos de las tres secciones que muestran las mascotas, se optó por incluir el titulo en formato amigable y consistente con la marca, se ajusto el tamaño y el color
+
+## Perfil
+
+  - Implementacion de funcionalidad para mostrar las mascotas que publico el usuario
 
 ## BUGS PENDIENTES
 

@@ -13,19 +13,21 @@ const API_BASE_URL_EXPO = 'http://192.168.1.4:8000/api'; //  IP local de la red 
 
 export default function PublicarMascota() {
   const router = useRouter();
-  const [user, setUser] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [mascotaImagen, setMascotaImagen] = useState<string | null>(null);
-  const [image, setImage] = useState("");
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [user, setUser] = useState('');
+  
+  {/*datos de el formulario*/}
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [sexo, setSexo] = useState('No sabe'); // Valor por defecto
   const [categoria, setCategoria] = useState('Perdido'); // Valor por defecto
   const [telefono, setTelefono] = useState('');
-  const [userToken, setUserToken] = useState<string | null>(null);
+  const [date, setDate] = useState('');
+  const [mascotaImagen, setMascotaImagen] = useState<string | null>(null);
+  const [image, setImage] = useState("");
 
   // Obtener token y usuario al cargar el componente
   React.useEffect(() => {
@@ -46,6 +48,8 @@ export default function PublicarMascota() {
         
         if (token) {
           console.log("Token obtenido exitosamente");
+          // Obtener perfil del usuario para el teléfono
+          await fetchUserProfile(token);
         }
       } catch (error) {
         console.error("Error obteniendo datos:", error);
@@ -53,6 +57,22 @@ export default function PublicarMascota() {
     };
     getTokenAndUser();
   }, []);
+
+  // Función para obtener el perfil del usuario
+  const fetchUserProfile = async (token: string) => {
+    try {
+      const API_URL = getApiUrl();
+      const response = await axios.get(`${API_URL}/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setTelefono(response.data.phone);
+      console.log("Teléfono del usuario:", response.data.phone);
+    } catch (error) {
+      console.error("Error obteniendo perfil:", error);
+    }
+  };
 
 
   const getApiUrl = () => {

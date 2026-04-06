@@ -1,24 +1,31 @@
 import ButtonPublicarMascota from "@/components/ButtonPublicarMascota";
 import MascotasLista from "@/components/mascotasLista";
-import { router } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { NavBar } from "../components/NavBar";
 
 export default function EnAdopcion() {
+return (
+    <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
+      <NavBar active="enAdopcion" />
+      <ButtonPublicarMascota />
 
-  return <>
-    <NavBar active="enAdopcion" />
+      <Text style={styles.title}>
+        PATITAS EN ADOPCIÓN
+      </Text>
 
-    <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 32 }}>ESTE ES EL EN ADOPCIÓN</Text>
-    <ButtonPublicarMascota />
-    <TouchableOpacity>
-      <Text style={{ marginTop: 50, padding: 10, textAlign: "center", fontSize: 24, color: 'blue' }} onPress={() => router.push('/register')}>REGISTRARSE</Text>
-    </TouchableOpacity>
-    <MascotasLista filtroValor="En Adopción" />
-  </>
-
-
+      {/* La lista ahora tiene un padre con espacio definido */}
+      <MascotasLista filtroValor="En Adopción" />
+    </View>
+  );
 }
-
+const styles = StyleSheet.create({
+  title: {
+    marginTop: 50,
+    padding: 10,
+    textAlign: "center",
+    fontSize: 26,
+    color: "#452790"
+  },
+})
 

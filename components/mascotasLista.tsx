@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f7f7f7",
-    marginBottom: 60,
+    marginBottom: 65,
   },
   headerTitle: {
     marginTop: 70,

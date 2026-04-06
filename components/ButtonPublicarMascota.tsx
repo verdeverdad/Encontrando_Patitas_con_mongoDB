@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         bottom: 10,
         right: 20,
         left: 20,
-        height: 80, // Aumentar altura
+        height: 60, // Aumentar altura
         paddingVertical: 10,
         paddingHorizontal: 10,
         borderRadius: 40,
