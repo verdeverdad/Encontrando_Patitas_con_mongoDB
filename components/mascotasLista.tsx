@@ -1,6 +1,6 @@
 import axios from "axios";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -40,6 +40,13 @@ export default function MascotasLista({ filtroValor }: MascotasListaProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [imgAmpliada, setImgAmpliada] = useState("");
 
+  // hook detecta cada vez que el usuario entra a la pantalla
+  useFocusEffect(
+    useCallback(() => {
+      // Aquí llamas a tu función que trae los datos de MongoDB
+      fetchMascotas();
+    }, [])
+  );
 
   const getApiUrl = () => {
     return Platform.OS === "web" ? API_BASE_URL_WEB : API_BASE_URL_EXPO;
@@ -56,10 +63,6 @@ export default function MascotasLista({ filtroValor }: MascotasListaProps) {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchMascotas();
-  }, []);
 
   // Lógica de filtrado
 

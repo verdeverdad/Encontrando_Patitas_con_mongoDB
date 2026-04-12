@@ -235,6 +235,7 @@ export default function PublicarMascota() {
       setDescription("");
       setImage("");
       setMascotaImagen(null);
+      
 
     } catch (error: any) {
       console.error("Error completo:", error.response?.data || error.message);

@@ -1,4 +1,5 @@
 
+05-04-2026
 ## FILTRO MASCOTAS 
 
  **Sistema de filtrado  principal de mascotas**  05-04-2026  
@@ -27,6 +28,11 @@
   - Implementacion de funcionalidad para mostrar las mascotas que publico el usuario
   - implementación de funcionalidad para eliminar las mascotas publicadas
   - botton de editar mascota colocado falta implementar la funcionalidad
+
+12-04-2026
+## Perfil
+
+  - Corrección de carga de lista de mascotas luego de que se publica una mascota, se cambio el useEffect por useFocusEffect para que se cargue los datos nuevos 
 
 ## BUGS PENDIENTES
 
