@@ -33,14 +33,19 @@
 ## Perfil
 
   - Corrección de carga de lista de mascotas luego de que se publica una mascota, se cambio el useEffect por useFocusEffect para que se cargue los datos nuevos 
+  - Correccion de los inputs de pantalla editar perfil, ya funciona correctamente modificacion de useFocusEffect
+  - Correccion imgen picker falla en carga de imagen corregida.
+
+## MASCOTAS
+  - Creacion de la pantalla de detalle de mascota, conexcion con param:_id desde la publicacion.  
 
 ## BUGS PENDIENTES
 
-- Editar perfil no se pueden editar los datos
+- ✔️ Editar perfil no se pueden editar los datos 
 - Editar mascotas funcionalidad
 - gestionar contraseña como se edita
 - implementar "Olvidó su contraseña"
-- editar perfil: *boton de seleccionar imagen *imagen nueva no se muestra mientras esta en editPerfil
+- ✔️ editar perfil: *boton de seleccionar imagen *imagen nueva no se muestra mientras esta en editPerfil
 - ubicar el registro y el inicio de secion y recuperar contraseña
 
   

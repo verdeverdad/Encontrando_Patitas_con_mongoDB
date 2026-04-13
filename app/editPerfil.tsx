@@ -151,13 +151,14 @@ export default function EditarPerfilScreen() {
 
         [getApiUrl]);
 
-
-
-
     useFocusEffect(
         useCallback(() => {
-            fetchCurrentData();
-        }, [fetchCurrentData])
+            // Solo cargamos los datos si NO estamos cargando ya (initialLoading)
+            // O si los campos están vacíos (primera carga)
+            if (initialLoading) {
+                fetchCurrentData();
+            }
+        }, [fetchCurrentData, initialLoading])
     );
     // ==========================================================
     // PASO 2: MANEJAR LA ACTUALIZACIÓN
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f7a423"
     },
     buttonsInicio: {
-       backgroundColor: '#f7a423',
+        backgroundColor: '#f7a423',
         paddingVertical: 12,
         marginTop: 15,
         borderRadius: 40,
