@@ -74,10 +74,10 @@ export default function MascotaDetalle() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff', marginTop: 70 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   mainImage: { width: '100%', height: 350 },
-  infoContainer: { padding: 20, marginTop: -20, backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+  infoContainer: { padding: 20,  backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30 },
   title: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 5 },
   location: { fontSize: 16, color: '#666', marginBottom: 15 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10, marginBottom: 10 },
