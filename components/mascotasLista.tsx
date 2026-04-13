@@ -88,8 +88,14 @@ export default function MascotasLista({ filtroValor }: MascotasListaProps) {
         </View>
         <Text style={styles.cardLocation}>📍 {item.localidad}</Text>
         <Text style={styles.cardDescription} numberOfLines={2}>{item.description}</Text>
-        <TouchableOpacity onPress={() => router.push('/mascota')}>
-          <Text>ver mas..</Text>
+        <TouchableOpacity
+          onPress={() => router.push({
+            pathname: '/mascota',
+            params: { id: item._id } // Pasamos el ID como parámetro
+          })}
+          style={{ marginTop: 5 }}
+        >
+          <Text style={{ color: '#452790', fontWeight: 'bold' }}>ver mas..</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
